@@ -1,6 +1,5 @@
 # Compiled output
 /out/
-*.vsix
 
 # Dependencies
 node_modules/
