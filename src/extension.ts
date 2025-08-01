@@ -30,59 +30,23 @@ class YodaCodeMentor {
 
   private async initializeGigaChat() {
     const config = vscode.workspace.getConfiguration('yoda');
-    const authMethod = config.get<string>('gigachat.authMethod') || 'apiKey';
+    const apiKey = config.get<string>('gigachat.apiKey');
     const baseUrl = config.get<string>('gigachat.baseUrl');
     const ignoreSSLErrors = config.get<boolean>('gigachat.ignoreSSLErrors');
 
-    // Validate authentication configuration
-    if (authMethod === 'apiKey') {
-      const apiKey = config.get<string>('gigachat.apiKey');
-      if (!apiKey) {
-        vscode.window.showWarningMessage(
-          'Yoda: GigaChat API key not configured. Please set it in settings.',
-          'Setup Wizard',
-          'Configure API Key'
-        ).then(selection => {
-          if (selection === 'Setup Wizard') {
-            vscode.commands.executeCommand('yoda.showSetupWizard');
-          } else if (selection === 'Configure API Key') {
-            vscode.commands.executeCommand('yoda.configureApiKey');
-          }
-        });
-        return;
-      }
-    } else if (authMethod === 'certificate') {
-      const certPath = config.get<string>('gigachat.certificatePath');
-      const keyPath = config.get<string>('gigachat.privateKeyPath');
-      
-      if (!certPath || !keyPath) {
-        vscode.window.showWarningMessage(
-          'Yoda: Certificate authentication requires both certificate and private key files.',
-          'Setup Wizard',
-          'Configure Certificate Auth'
-        ).then(selection => {
-          if (selection === 'Setup Wizard') {
-            vscode.commands.executeCommand('yoda.showSetupWizard');
-          } else if (selection === 'Configure Certificate Auth') {
-            vscode.commands.executeCommand('yoda.configureCertificateAuth');
-          }
-        });
-        return;
-      }
-
-      // Validate certificate files exist
-      const validationResult = await this.validateCertificateFiles(certPath, keyPath);
-      if (!validationResult.valid) {
-        vscode.window.showErrorMessage(
-          `Yoda: Certificate validation failed: ${validationResult.error}`,
-          'Configure Certificate Auth'
-        ).then(selection => {
-          if (selection === 'Configure Certificate Auth') {
-            vscode.commands.executeCommand('yoda.configureCertificateAuth');
-          }
-        });
-        return;
-      }
+    if (!apiKey) {
+      vscode.window.showWarningMessage(
+        'Yoda: GigaChat API key not configured. Please set it in settings.',
+        'Setup Wizard',
+        'Configure API Key'
+      ).then(selection => {
+        if (selection === 'Setup Wizard') {
+          vscode.commands.executeCommand('yoda.showSetupWizard');
+        } else if (selection === 'Configure API Key') {
+          vscode.commands.executeCommand('yoda.configureApiKey');
+        }
+      });
+      return;
     }
 
     try {
@@ -91,63 +55,22 @@ class YodaCodeMentor {
         process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
       }
       
-      // Build GigaChat configuration matching Python approach
+      // Build GigaChat configuration
       const gigaChatConfig: any = {
-        // Authentication and SSL settings
+        clientSecretKey: apiKey,
         isIgnoreTSL: ignoreSSLErrors || true,
         isPersonal: true,
-        autoRefreshToken: authMethod === 'apiKey', // Only for API key auth
-        verifySSLCerts: !ignoreSSLErrors,
-        
-        // Model and generation parameters (matching Python defaults)
-        model: this.getSelectedModel(),
-        temperature: 1e-15,
-        top_p: 0,
-        repetition_penalty: 1,
-        profanity_check: false,
-        verbose: false,
-        timeout: 30
+        autoRefreshToken: true,
+        verifySSLCerts: !ignoreSSLErrors
       };
 
-      // Configure base URL (check environment variable like Python approach)
-      let finalBaseUrl = baseUrl?.trim();
-      
-      // If no base URL in settings, check environment variable (matching Python approach)
-      if (!finalBaseUrl && process.env.GIGACHAT_HOST) {
-        finalBaseUrl = process.env.GIGACHAT_HOST;
-        console.log('🌐 Using GIGACHAT_HOST environment variable');
-      }
-      
-      if (finalBaseUrl) {
-        // Ensure it ends with /v1 (matching Python approach)
-        if (!finalBaseUrl.endsWith('/v1')) {
-          finalBaseUrl = finalBaseUrl.replace(/\/$/, '') + '/v1';
-        }
-        gigaChatConfig.base_url = finalBaseUrl;
-        console.log(`🌐 Using GigaChat base URL: ${finalBaseUrl}`);
+      // Add base URL if specified
+      if (baseUrl && baseUrl.trim()) {
+        gigaChatConfig.baseUrl = baseUrl.trim();
+        console.log(`🌐 Using custom GigaChat base URL: ${baseUrl}`);
       }
 
-      // Configure authentication method
-      if (authMethod === 'apiKey') {
-        const apiKey = config.get<string>('gigachat.apiKey');
-        gigaChatConfig.clientSecretKey = apiKey;
-        console.log('🔑 Using API key authentication');
-      } else if (authMethod === 'certificate') {
-        const certPath = config.get<string>('gigachat.certificatePath');
-        const keyPath = config.get<string>('gigachat.privateKeyPath');
-        const passphrase = config.get<string>('gigachat.certificatePassphrase');
-        
-        // Use file paths directly (not file contents)
-        gigaChatConfig.cert_file = certPath;
-        gigaChatConfig.key_file = keyPath;
-        
-        if (passphrase && passphrase.trim()) {
-          gigaChatConfig.passphrase = passphrase;
-        }
-        
-        console.log(`📄 Using certificate authentication: cert=${certPath}, key=${keyPath}`);
-      }
-
+      console.log('🔑 Using API key authentication');
       this.gigaChat = new GigaChat(gigaChatConfig);
       
       // Create the access token
@@ -260,10 +183,6 @@ class YodaCodeMentor {
       await this.showCurrentModel();
     });
 
-    const configureCertificateAuthCommand = vscode.commands.registerCommand('yoda.configureCertificateAuth', async () => {
-      await this.showCertificateAuthSetup();
-    });
-
     const testConnectionCommand = vscode.commands.registerCommand('yoda.testConnection', async () => {
       await this.testGigaChatConnection();
     });
@@ -278,7 +197,6 @@ class YodaCodeMentor {
       selectModelCommand, 
       refreshModelsCommand, 
       showCurrentModelCommand,
-      configureCertificateAuthCommand,
       testConnectionCommand
     );
   }
@@ -390,50 +308,7 @@ class YodaCodeMentor {
     return terms.filter(term => term.length > 2); // Filter out very short terms
   }
 
-  private async validateCertificateFiles(certPath: string, keyPath: string): Promise<{valid: boolean, error?: string}> {
-    const fs = require('fs');
-    const path = require('path');
-    
-    try {
-      // Check if certificate file exists and is readable
-      if (!fs.existsSync(certPath)) {
-        return {valid: false, error: `Certificate file not found: ${certPath}`};
-      }
-      
-      // Check if private key file exists and is readable
-      if (!fs.existsSync(keyPath)) {
-        return {valid: false, error: `Private key file not found: ${keyPath}`};
-      }
-      
-      // Try to access both files (just check readability, don't read content)
-      try {
-        fs.accessSync(certPath, fs.constants.R_OK);
-        fs.accessSync(keyPath, fs.constants.R_OK);
-      } catch (accessError) {
-        return {valid: false, error: `File access permissions error: ${accessError}`};
-      }
-      
-      // Optional: Basic content validation (quick peek)
-      try {
-        const certContent = fs.readFileSync(certPath, 'utf8');
-        const keyContent = fs.readFileSync(keyPath, 'utf8');
-        
-        if (!certContent.includes('BEGIN CERTIFICATE') && !certContent.includes('BEGIN CERT')) {
-          return {valid: false, error: 'Certificate file does not appear to be a valid certificate'};
-        }
-        
-        if (!keyContent.includes('BEGIN PRIVATE KEY') && !keyContent.includes('BEGIN RSA PRIVATE KEY') && !keyContent.includes('BEGIN EC PRIVATE KEY')) {
-          return {valid: false, error: 'Private key file does not appear to be a valid private key'};
-        }
-      } catch (readError) {
-        console.warn('Could not validate certificate content, but files exist:', readError);
-      }
-      
-      return {valid: true};
-    } catch (error) {
-      return {valid: false, error: `Validation error: ${error}`};
-    }
-  }
+
 
   private buildAnalysisPrompt(code: string, language: string, rules: string[]): string {
     const getLanguageGuidance = (lang: string): string => {
@@ -1692,85 +1567,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
 
 
 
-  private async showCertificateAuthSetup() {
-    const config = vscode.workspace.getConfiguration('yoda');
-    
-    // Step 1: Choose certificate file
-    const certFileOptions: vscode.OpenDialogOptions = {
-      canSelectMany: false,
-      openLabel: 'Select Certificate File',
-      filters: {
-        'Certificate files': ['crt', 'pem', 'cert'],
-        'All files': ['*']
-      }
-    };
-    
-    const certFileUri = await vscode.window.showOpenDialog(certFileOptions);
-    if (!certFileUri || certFileUri.length === 0) {
-      return;
-    }
-    
-    // Step 2: Choose private key file
-    const keyFileOptions: vscode.OpenDialogOptions = {
-      canSelectMany: false,
-      openLabel: 'Select Private Key File',
-      filters: {
-        'Key files': ['key', 'pem'],
-        'All files': ['*']
-      }
-    };
-    
-    const keyFileUri = await vscode.window.showOpenDialog(keyFileOptions);
-    if (!keyFileUri || keyFileUri.length === 0) {
-      return;
-    }
-    
-    // Step 3: Optional passphrase
-    const passphrase = await vscode.window.showInputBox({
-      prompt: 'Enter private key passphrase (optional, leave empty if not needed)',
-      password: true,
-      placeHolder: 'Leave empty if no passphrase is required'
-    });
-    
-    // Step 4: Optional custom base URL
-    const baseUrl = await vscode.window.showInputBox({
-      prompt: 'Enter custom GigaChat base URL (optional)',
-      placeHolder: 'e.g., https://gigachat.devices.sberbank.ru/api/v1',
-      value: config.get<string>('gigachat.baseUrl') || ''
-    });
-    
-    try {
-      // Save configuration
-      await config.update('gigachat.authMethod', 'certificate', vscode.ConfigurationTarget.Global);
-      await config.update('gigachat.certificatePath', certFileUri[0].fsPath, vscode.ConfigurationTarget.Global);
-      await config.update('gigachat.privateKeyPath', keyFileUri[0].fsPath, vscode.ConfigurationTarget.Global);
-      
-      if (passphrase && passphrase.trim()) {
-        await config.update('gigachat.certificatePassphrase', passphrase.trim(), vscode.ConfigurationTarget.Global);
-      }
-      
-      if (baseUrl && baseUrl.trim()) {
-        await config.update('gigachat.baseUrl', baseUrl.trim(), vscode.ConfigurationTarget.Global);
-      }
-      
-      await config.update('setup.completed', true, vscode.ConfigurationTarget.Global);
-      
-      vscode.window.showInformationMessage(
-        '✅ Certificate authentication configured successfully! Restarting Yoda...',
-        'Test Connection'
-      ).then(selection => {
-        if (selection === 'Test Connection') {
-          vscode.commands.executeCommand('yoda.testConnection');
-        }
-      });
-      
-      // Reinitialize with new settings
-      await this.initializeGigaChat();
-      
-    } catch (error) {
-      vscode.window.showErrorMessage(`Failed to save certificate configuration: ${error}`);
-    }
-  }
+
 
   private async testGigaChatConnection() {
     if (!this.gigaChat) {
@@ -1798,12 +1595,11 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
         progress.report({ increment: 70, message: 'Connection successful!' });
         
         const config = vscode.workspace.getConfiguration('yoda');
-        const authMethod = config.get<string>('gigachat.authMethod') || 'apiKey';
         const baseUrl = config.get<string>('gigachat.baseUrl');
         
         const connectionInfo = [
           `✅ GigaChat connection successful!`,
-          `🔐 Authentication: ${authMethod === 'apiKey' ? 'API Key' : 'Certificate'}`,
+          `🔐 Authentication: API Key`,
           `🤖 Model: ${this.getSelectedModel()}`,
           baseUrl ? `🌐 Base URL: ${baseUrl}` : '🌐 Base URL: Default'
         ].join('\n');
