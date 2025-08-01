@@ -1,0 +1,341 @@
+{
+  "name": "yoda-code-mentor",
+  "displayName": "Yoda - Code Reviewer",
+  "description": "AI-powered multi-language code reviewer that checks your code against best practices using GigaChat. Supports Python, JavaScript, TypeScript, Java, C#, C++ and more.",
+  "version": "1.0.6",
+  "publisher": "your-company",
+  "icon": "yoda-icon.png",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "code-review",
+    "best-practices",
+    "multi-language",
+    "python",
+    "javascript",
+    "typescript",
+    "java",
+    "csharp",
+    "cpp",
+    "gigachat",
+    "mentor",
+    "static-analysis"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:java",
+    "onLanguage:csharp",
+    "onLanguage:cpp"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "yoda.analyzeFile",
+        "title": "Yoda: Analyze Current File",
+        "icon": "$(search)"
+      },
+      {
+        "command": "yoda.analyzeWorkspace",
+        "title": "Yoda: Analyze All Files",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "yoda.configureBestPractices",
+        "title": "Yoda: Configure Best Practices",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "yoda.configureApiKey",
+        "title": "Yoda: Setup GigaChat API Key",
+        "icon": "$(key)"
+      },
+      {
+        "command": "yoda.showSetupWizard",
+        "title": "Yoda: Setup Wizard",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "yoda.analyzeCrossFile",
+        "title": "Yoda: Cross-File Analysis",
+        "icon": "$(files)"
+      },
+      {
+        "command": "yoda.selectModel",
+        "title": "Yoda: Select GigaChat Model",
+        "icon": "$(robot)"
+      },
+      {
+        "command": "yoda.refreshModels",
+        "title": "Yoda: Refresh Available Models",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "yoda.showCurrentModel",
+        "title": "Yoda: Show Current Model",
+        "icon": "$(info)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "yoda.analyzeFile",
+          "when": "resourceExtname =~ /\\.(py|js|ts|java|cs|cpp|c)$/",
+          "group": "yoda"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "yoda.analyzeFile",
+          "when": "editorLangId =~ /(python|javascript|typescript|java|csharp|cpp)/",
+          "group": "yoda"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "yoda.analyzeFile",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "yoda.analyzeWorkspace"
+        },
+        {
+          "command": "yoda.configureBestPractices"
+        },
+        {
+          "command": "yoda.configureApiKey"
+        },
+        {
+          "command": "yoda.showSetupWizard"
+        },
+        {
+          "command": "yoda.analyzeCrossFile"
+        },
+        {
+          "command": "yoda.selectModel"
+        },
+        {
+          "command": "yoda.refreshModels"
+        },
+        {
+          "command": "yoda.showCurrentModel"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Yoda Code Mentor",
+      "properties": {
+        "yoda.gigachat.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "🔑 GigaChat Client Secret Key (in Base64 format). Get yours at https://developers.sber.ru/studio",
+          "scope": "application",
+          "order": 0
+        },
+        "yoda.setup.completed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Internal flag to track if initial setup is completed",
+          "scope": "application"
+        },
+        "yoda.gigachat.ignoreSSLErrors": {
+          "type": "boolean",
+          "default": true,
+          "description": "🔒 Ignore SSL certificate errors when connecting to GigaChat (recommended for Russian certificates)",
+          "scope": "application",
+          "order": 1
+        },
+        "yoda.gigachat.model": {
+          "type": "string",
+          "default": "GigaChat:latest",
+          "description": "🤖 GigaChat model to use for code analysis",
+          "scope": "machine-overridable",
+          "order": 2
+        },
+        "yoda.gigachat.availableModels": {
+          "type": "array",
+          "default": ["GigaChat:latest", "GigaChat-Pro", "GigaChat-Plus"],
+          "description": "📋 List of available GigaChat models (automatically updated)",
+          "scope": "application"
+        },
+        "yoda.autoAnalyze": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically analyze files when they are saved",
+          "scope": "resource"
+        },
+        "yoda.bestPractices": {
+          "type": "object",
+          "default": {
+            "general": [
+              "Use meaningful variable and function names",
+              "Keep functions small and focused (max 20-30 lines)",
+              "Add proper error handling and logging",
+              "Include comprehensive documentation and comments",
+              "Follow consistent code formatting and style",
+              "Avoid code duplication (DRY principle)",
+              "Use descriptive commit messages",
+              "Handle edge cases and validate inputs",
+              "Write unit tests for critical functionality",
+              "Use constants for magic numbers and strings"
+            ],
+            "python": [
+              "Follow PEP 8 style guidelines strictly",
+              "Use type hints for all function parameters and return values",
+              "Handle exceptions properly with specific exception types",
+              "Use list/dict comprehensions when appropriate",
+              "Prefer f-strings over .format() or % formatting",
+              "Use pathlib instead of os.path for file operations",
+              "Follow proper import organization (stdlib, third-party, local)",
+              "Use dataclasses or Pydantic models for data structures",
+              "Implement proper logging instead of print statements",
+              "Use context managers (with statements) for resource handling",
+              "Follow naming conventions: snake_case for variables/functions, PascalCase for classes",
+              "Add docstrings to all modules, classes, and functions",
+              "Keep line length under 88 characters (Black formatter standard)",
+              "Use virtual environments and requirements.txt",
+              "Prefer explicit code over implicit (Zen of Python)",
+              "Use early returns to reduce nesting"
+            ],
+            "javascript": [
+              "Use const/let instead of var for variable declarations",
+              "Prefer arrow functions for callbacks and short functions",
+              "Use async/await instead of Promise chains when possible",
+              "Use template literals instead of string concatenation",
+              "Implement proper error handling with try/catch",
+              "Use strict equality (===) instead of loose equality (==)",
+              "Avoid global variables and use modules",
+              "Use meaningful variable and function names",
+              "Handle null/undefined values properly",
+              "Use JSDoc comments for function documentation",
+              "Follow consistent naming conventions (camelCase)",
+              "Use modern ES6+ features appropriately",
+              "Avoid deeply nested callbacks (callback hell)",
+              "Use Array methods (map, filter, reduce) instead of loops when appropriate",
+              "Implement proper event handling and cleanup"
+            ],
+            "typescript": [
+              "Define explicit types for all variables and function parameters",
+              "Use interfaces for object shapes and contracts",
+              "Avoid 'any' type unless absolutely necessary",
+              "Use union types instead of any when possible",
+              "Implement proper generic constraints",
+              "Use enums for related constants",
+              "Enable strict TypeScript compiler options",
+              "Use type guards for runtime type checking",
+              "Prefer readonly properties when data shouldn't change",
+              "Use utility types (Partial, Pick, Omit) appropriately",
+              "Create custom type definitions for external libraries",
+              "Use discriminated unions for complex state management",
+              "Implement proper error handling with typed exceptions",
+              "Use namespace or module declarations appropriately"
+            ],
+            "java": [
+              "Follow Java naming conventions (camelCase, PascalCase)",
+              "Use proper access modifiers (private, protected, public)",
+              "Implement proper exception handling with specific exception types",
+              "Use interfaces to define contracts",
+              "Follow SOLID principles for class design",
+              "Use StringBuilder for string concatenation in loops",
+              "Implement proper equals() and hashCode() methods",
+              "Use generics to ensure type safety",
+              "Close resources properly (try-with-resources)",
+              "Use static methods appropriately",
+              "Follow package naming conventions",
+              "Use final keyword for immutable variables",
+              "Implement proper logging with frameworks like SLF4J",
+              "Use annotations (@Override, @Deprecated) appropriately",
+              "Follow Google Java Style Guide formatting"
+            ],
+            "csharp": [
+              "Follow C# naming conventions (PascalCase for public, camelCase for private)",
+              "Use proper access modifiers and encapsulation",
+              "Implement IDisposable for resource management",
+              "Use using statements for automatic resource disposal",
+              "Prefer properties over public fields",
+              "Use nullable reference types in C# 8+",
+              "Implement proper exception handling with specific exception types",
+              "Use LINQ methods appropriately",
+              "Follow async/await patterns correctly",
+              "Use var keyword when type is obvious",
+              "Implement proper ToString(), Equals(), and GetHashCode() methods",
+              "Use dependency injection for better testability",
+              "Follow Microsoft C# Coding Conventions",
+              "Use XML documentation comments for public APIs",
+              "Prefer composition over inheritance"
+            ],
+            "cpp": [
+              "Use RAII (Resource Acquisition Is Initialization) principle",
+              "Prefer smart pointers (unique_ptr, shared_ptr) over raw pointers",
+              "Use const correctness throughout the code",
+              "Follow naming conventions (snake_case or camelCase consistently)",
+              "Use range-based for loops when appropriate",
+              "Implement proper copy constructors and assignment operators",
+              "Use override keyword for virtual function overrides",
+              "Prefer std::array over C-style arrays",
+              "Use nullptr instead of NULL",
+              "Implement proper exception handling",
+              "Use auto keyword when type is obvious",
+              "Follow the Rule of Three/Five/Zero",
+              "Use std::string instead of char arrays",
+              "Prefer algorithms from <algorithm> over manual loops",
+              "Use proper header guards or #pragma once"
+            ],
+            "c": [
+              "Use meaningful variable and function names",
+              "Check return values of all functions",
+              "Free all allocated memory to prevent memory leaks",
+              "Use const keyword for read-only parameters",
+              "Initialize all variables before use",
+              "Use static keyword for internal linkage",
+              "Implement proper error handling",
+              "Use header guards in header files",
+              "Follow consistent indentation and formatting",
+              "Avoid global variables when possible",
+              "Use sizeof() operator for array sizes",
+              "Check for null pointers before dereferencing",
+              "Use standard library functions when available",
+              "Follow MISRA C guidelines for safety-critical code"
+            ]
+          },
+          "description": "Comprehensive best practices for multiple programming languages",
+          "scope": "resource"
+        },
+        "yoda.severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"],
+          "default": "warning",
+          "description": "Default severity level for best practice violations",
+          "scope": "resource"
+        },
+        "yoda.crossFileAnalysis": {
+          "type": "boolean",
+          "default": true,
+          "description": "🔗 Enable cross-file analysis to detect issues spanning multiple files (imports, naming conflicts, etc.)",
+          "scope": "resource"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "gigachat-node": "^2.4.5"
+  }
+}
