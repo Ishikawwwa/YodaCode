@@ -2,7 +2,7 @@
   "name": "yoda-code-mentor",
   "displayName": "Yoda - Code Reviewer",
   "description": "AI-powered multi-language code reviewer that checks your code against best practices using GigaChat. Supports Python, JavaScript, TypeScript, Java, C#, C++ and more.",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "publisher": "your-company",
   "icon": "yoda-icon.png",
   "engines": {
@@ -82,6 +82,16 @@
         "command": "yoda.showCurrentModel",
         "title": "Yoda: Show Current Model",
         "icon": "$(info)"
+      },
+      {
+        "command": "yoda.configureCertificateAuth",
+        "title": "Yoda: Configure Certificate Authentication",
+        "icon": "$(file-certificate)"
+      },
+      {
+        "command": "yoda.testConnection",
+        "title": "Yoda: Test GigaChat Connection",
+        "icon": "$(plug)"
       }
     ],
     "menus": {
@@ -146,19 +156,59 @@
           "description": "Internal flag to track if initial setup is completed",
           "scope": "application"
         },
+        "yoda.gigachat.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "🌐 Custom GigaChat API base URL (leave empty for default). Example: https://gigachat.devices.sberbank.ru/api/v1",
+          "scope": "application",
+          "order": 1
+        },
+        "yoda.gigachat.authMethod": {
+          "type": "string",
+          "default": "apiKey",
+          "enum": ["apiKey", "certificate"],
+          "enumDescriptions": [
+            "Use API Key (Client Secret Key) for authentication",
+            "Use client certificate for authentication"
+          ],
+          "description": "🔐 Authentication method to use with GigaChat API",
+          "scope": "application",
+          "order": 2
+        },
+        "yoda.gigachat.certificatePath": {
+          "type": "string",
+          "default": "",
+          "description": "📄 Path to client certificate file (.crt or .pem) for certificate authentication",
+          "scope": "application",
+          "order": 3
+        },
+        "yoda.gigachat.privateKeyPath": {
+          "type": "string",
+          "default": "",
+          "description": "🔑 Path to private key file (.key or .pem) for certificate authentication", 
+          "scope": "application",
+          "order": 4
+        },
+        "yoda.gigachat.certificatePassphrase": {
+          "type": "string",
+          "default": "",
+          "description": "🔒 Passphrase for the private key (optional, leave empty if not needed)",
+          "scope": "application",
+          "order": 5
+        },
         "yoda.gigachat.ignoreSSLErrors": {
           "type": "boolean",
           "default": true,
           "description": "🔒 Ignore SSL certificate errors when connecting to GigaChat (recommended for Russian certificates)",
           "scope": "application",
-          "order": 1
+          "order": 6
         },
         "yoda.gigachat.model": {
           "type": "string",
           "default": "GigaChat:latest",
           "description": "🤖 GigaChat model to use for code analysis",
           "scope": "machine-overridable",
-          "order": 2
+          "order": 7
         },
         "yoda.gigachat.availableModels": {
           "type": "array",
