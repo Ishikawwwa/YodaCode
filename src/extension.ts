@@ -91,18 +91,40 @@ class YodaCodeMentor {
         process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
       }
       
-      // Build GigaChat configuration based on auth method
+      // Build GigaChat configuration matching Python approach
       const gigaChatConfig: any = {
+        // Authentication and SSL settings
         isIgnoreTSL: ignoreSSLErrors || true,
         isPersonal: true,
         autoRefreshToken: authMethod === 'apiKey', // Only for API key auth
-        verifySSLCerts: !ignoreSSLErrors
+        verifySSLCerts: !ignoreSSLErrors,
+        
+        // Model and generation parameters (matching Python defaults)
+        model: this.getSelectedModel(),
+        temperature: 1e-15,
+        top_p: 0,
+        repetition_penalty: 1,
+        profanity_check: false,
+        verbose: false,
+        timeout: 30
       };
 
-      // Add base URL if specified
-      if (baseUrl && baseUrl.trim()) {
-        gigaChatConfig.baseUrl = baseUrl.trim();
-        console.log(`🌐 Using custom GigaChat base URL: ${baseUrl}`);
+      // Configure base URL (check environment variable like Python approach)
+      let finalBaseUrl = baseUrl?.trim();
+      
+      // If no base URL in settings, check environment variable (matching Python approach)
+      if (!finalBaseUrl && process.env.GIGACHAT_HOST) {
+        finalBaseUrl = process.env.GIGACHAT_HOST;
+        console.log('🌐 Using GIGACHAT_HOST environment variable');
+      }
+      
+      if (finalBaseUrl) {
+        // Ensure it ends with /v1 (matching Python approach)
+        if (!finalBaseUrl.endsWith('/v1')) {
+          finalBaseUrl = finalBaseUrl.replace(/\/$/, '') + '/v1';
+        }
+        gigaChatConfig.base_url = finalBaseUrl;
+        console.log(`🌐 Using GigaChat base URL: ${finalBaseUrl}`);
       }
 
       // Configure authentication method
@@ -115,18 +137,15 @@ class YodaCodeMentor {
         const keyPath = config.get<string>('gigachat.privateKeyPath');
         const passphrase = config.get<string>('gigachat.certificatePassphrase');
         
-        // Read certificate files
-        const fs = require('fs');
-        try {
-          gigaChatConfig.cert = fs.readFileSync(certPath, 'utf8');
-          gigaChatConfig.key = fs.readFileSync(keyPath, 'utf8');
-          if (passphrase && passphrase.trim()) {
-            gigaChatConfig.passphrase = passphrase;
-          }
-          console.log('📄 Using certificate authentication');
-        } catch (readError) {
-          throw new Error(`Failed to read certificate files: ${readError}`);
+        // Use file paths directly (not file contents)
+        gigaChatConfig.cert_file = certPath;
+        gigaChatConfig.key_file = keyPath;
+        
+        if (passphrase && passphrase.trim()) {
+          gigaChatConfig.passphrase = passphrase;
         }
+        
+        console.log(`📄 Using certificate authentication: cert=${certPath}, key=${keyPath}`);
       }
 
       this.gigaChat = new GigaChat(gigaChatConfig);
@@ -386,22 +405,33 @@ class YodaCodeMentor {
         return {valid: false, error: `Private key file not found: ${keyPath}`};
       }
       
-      // Try to read both files
-      const certContent = fs.readFileSync(certPath, 'utf8');
-      const keyContent = fs.readFileSync(keyPath, 'utf8');
-      
-      // Basic validation of file content
-      if (!certContent.includes('BEGIN CERTIFICATE') && !certContent.includes('BEGIN CERT')) {
-        return {valid: false, error: 'Certificate file does not appear to be a valid certificate'};
+      // Try to access both files (just check readability, don't read content)
+      try {
+        fs.accessSync(certPath, fs.constants.R_OK);
+        fs.accessSync(keyPath, fs.constants.R_OK);
+      } catch (accessError) {
+        return {valid: false, error: `File access permissions error: ${accessError}`};
       }
       
-      if (!keyContent.includes('BEGIN PRIVATE KEY') && !keyContent.includes('BEGIN RSA PRIVATE KEY')) {
-        return {valid: false, error: 'Private key file does not appear to be a valid private key'};
+      // Optional: Basic content validation (quick peek)
+      try {
+        const certContent = fs.readFileSync(certPath, 'utf8');
+        const keyContent = fs.readFileSync(keyPath, 'utf8');
+        
+        if (!certContent.includes('BEGIN CERTIFICATE') && !certContent.includes('BEGIN CERT')) {
+          return {valid: false, error: 'Certificate file does not appear to be a valid certificate'};
+        }
+        
+        if (!keyContent.includes('BEGIN PRIVATE KEY') && !keyContent.includes('BEGIN RSA PRIVATE KEY') && !keyContent.includes('BEGIN EC PRIVATE KEY')) {
+          return {valid: false, error: 'Private key file does not appear to be a valid private key'};
+        }
+      } catch (readError) {
+        console.warn('Could not validate certificate content, but files exist:', readError);
       }
       
       return {valid: true};
     } catch (error) {
-      return {valid: false, error: `File access error: ${error}`};
+      return {valid: false, error: `Validation error: ${error}`};
     }
   }
 

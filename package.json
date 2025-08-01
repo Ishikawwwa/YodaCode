@@ -2,7 +2,7 @@
   "name": "yoda-code-mentor",
   "displayName": "Yoda - Code Reviewer",
   "description": "AI-powered multi-language code reviewer that checks your code against best practices using GigaChat. Supports Python, JavaScript, TypeScript, Java, C#, C++ and more.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "publisher": "your-company",
   "icon": "yoda-icon.png",
   "engines": {
@@ -159,7 +159,7 @@
         "yoda.gigachat.baseUrl": {
           "type": "string",
           "default": "",
-          "description": "🌐 Custom GigaChat API base URL (leave empty for default). Example: https://gigachat.devices.sberbank.ru/api/v1",
+          "description": "🌐 Custom GigaChat API base URL (leave empty for default). Example: https://gigachat.devices.sberbank.ru/api/v1. Can also use environment variable GIGACHAT_HOST.",
           "scope": "application",
           "order": 1
         },
