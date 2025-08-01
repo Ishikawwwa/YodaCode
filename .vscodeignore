@@ -1,0 +1,49 @@
+# Source files
+src/**/*.ts
+src/**/*.map
+tsconfig.json
+
+# Build and development
+.vscode/
+.git/
+.gitignore
+node_modules/
+*.vsix
+
+# Documentation files are included by default
+
+# Test and development files
+test*/
+*test*
+debug*
+example*
+*.test.*
+*.spec.*
+
+# Temporary and build artifacts
+*.log
+*.tmp
+*.temp
+coverage/
+.nyc_output/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+*.swp
+*.swo
+*~
+
+# Certificate and key files
+*.crt
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Helper scripts
+create-*
+build-*
+deploy-*
