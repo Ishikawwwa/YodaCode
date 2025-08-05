@@ -2,7 +2,7 @@
 
 ## 🎉 **Choose Your AI Model!**
 
-Yoda now supports **multiple GigaChat models** with different capabilities and performance characteristics. You can select the model that best fits your needs!
+YACOR now supports **multiple GigaChat models** with different capabilities and performance characteristics. You can select the model that best fits your needs!
 
 ---
 
@@ -34,19 +34,19 @@ Yoda now supports **multiple GigaChat models** with different capabilities and p
 
 ### **Method 1: Command Palette**
 1. Press **`Ctrl+Shift+P`**
-2. Type: **`Yoda: Select GigaChat Model`**
+2. Type: **`YACOR: Select GigaChat Model`**
 3. Choose from available models
 4. Your selection is automatically saved!
 
 ### **Method 2: VS Code Settings**
 1. Open VS Code Settings (`Ctrl+,`)
-2. Search for: **`yoda gigachat model`**
+2. Search for: **`yacor gigachat model`**
 3. Select your preferred model from the dropdown
 
 ### **Method 3: Settings JSON**
 ```json
 {
-  "yoda.gigachat.model": "GigaChat-Pro"
+  "yacor.gigachat.model": "GigaChat-Pro"
 }
 ```
 
@@ -58,13 +58,13 @@ Yoda now supports **multiple GigaChat models** with different capabilities and p
 
 | Command | Description | Icon |
 |---------|-------------|------|
-| `Yoda: Select GigaChat Model` | Choose from available models | 🤖 |
-| `Yoda: Show Current Model` | View current model and settings | ℹ️ |
-| `Yoda: Refresh Available Models` | Update model list from API | 🔄 |
+| `YACOR: Select GigaChat Model` | Choose from available models | 🤖 |
+| `YACOR: Show Current Model` | View current model and settings | ℹ️ |
+| `YACOR: Refresh Available Models` | Update model list from API | 🔄 |
 
 ### **Access via Command Palette:**
 - Press **`Ctrl+Shift+P`**
-- Type **`Yoda:`** to see all available commands
+- Type **`YACOR:`** to see all available commands
 
 ---
 
@@ -72,7 +72,7 @@ Yoda now supports **multiple GigaChat models** with different capabilities and p
 
 If you're experiencing issues with model selection, use the **debugging commands**:
 
-### **`Yoda: Show Current Model`**
+### **`YACOR: Show Current Model`**
 This command shows:
 - ✅ **Current active model**
 - 📋 **Available models list**
@@ -92,8 +92,8 @@ Open Developer Console (`Ctrl+Shift+P` → "Developer: Toggle Developer Tools") 
 ### **Settings Structure:**
 ```json
 {
-  "yoda.gigachat.model": "GigaChat:latest",
-  "yoda.gigachat.availableModels": [
+  "yacor.gigachat.model": "GigaChat:latest",
+"yacor.gigachat.availableModels": [
     "GigaChat:latest",
     "GigaChat-Pro", 
     "GigaChat-Plus",
@@ -148,7 +148,7 @@ The extension automatically:
 ### **Manual Refresh:**
 If you want to check for new models:
 1. Press **`Ctrl+Shift+P`**
-2. Type: **`Yoda: Refresh Available Models`**
+2. Type: **`YACOR: Refresh Available Models`**
 3. Available models will be updated from the GigaChat API
 
 ---
@@ -156,12 +156,12 @@ If you want to check for new models:
 ## 🛠️ **Troubleshooting**
 
 ### **Model not saving?**
-1. Try **`Yoda: Show Current Model`** to see configuration details
+1. Try **`YACOR: Show Current Model`** to see configuration details
 2. Check if you have workspace-specific settings overriding global ones
 3. Try selecting the model again - the extension will try different scopes
 
 ### **Model not available?**
-1. Run **`Yoda: Refresh Available Models`**
+1. Run **`YACOR: Refresh Available Models`**
 2. Make sure your GigaChat API key is valid
 3. Check your internet connection
 
@@ -177,13 +177,13 @@ If you want to check for new models:
 **Try it right now:**
 
 1. **Open Command Palette**: `Ctrl+Shift+P`
-2. **Type**: `Yoda: Select GigaChat Model`
+2. **Type**: `YACOR: Select GigaChat Model`
 3. **Choose**: A different model (like `GigaChat-Pro`)
 4. **Test**: Save any code file to trigger analysis
-5. **Verify**: Check `Yoda: Show Current Model` to confirm your selection
+5. **Verify**: Check `YACOR: Show Current Model` to confirm your selection
 
 Your model selection is now **persistent** and will be used for all future analysis! 🎯
 
 ---
 
-**🧙‍♂️ Yoda is now more powerful than ever with customizable AI models!** 
+**🧙‍♂️ YACOR is now more powerful than ever with customizable AI models!** 

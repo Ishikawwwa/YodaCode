@@ -13,12 +13,12 @@ GigaChat uses **Russian SSL certificates** that aren't automatically trusted by 
 ## 🛠️ **How I Fixed It**
 
 ### **1. Automatic SSL Error Handling** 
-- ✅ **Smart Error Detection**: Yoda now detects SSL/certificate errors automatically
+- ✅ **Smart Error Detection**: YACOR now detects SSL/certificate errors automatically
 - ✅ **One-Click Fix**: When an SSL error occurs, you get a "Fix SSL Issues" button
 - ✅ **Automatic Recovery**: Extension restarts itself after fixing the issue
 
 ### **2. Enhanced Configuration**
-- ✅ **New Setting**: `Yoda: Gigachat › Ignore SSL Errors` (enabled by default)
+- ✅ **New Setting**: `YACOR: Gigachat › Ignore SSL Errors` (enabled by default)
 - ✅ **Node.js Environment**: Sets `NODE_TLS_REJECT_UNAUTHORIZED=0` when needed
 - ✅ **GigaChat Library**: Configures `isIgnoreTSL: true` and `verifySSLCerts: false`
 
@@ -34,16 +34,16 @@ GigaChat uses **Russian SSL certificates** that aren't automatically trusted by 
 ### **Method 1: Automatic Fix (When Error Occurs)**
 1. When you see the SSL certificate error
 2. Click **"Fix SSL Issues"** 
-3. Yoda will automatically configure everything and restart! ✨
+3. YACOR will automatically configure everything and restart! ✨
 
 ### **Method 2: Manual Configuration**
 1. Open VS Code Settings (`Ctrl+,`)
-2. Search for **"Yoda SSL"**
+2. Search for **"YACOR SSL"**
 3. Enable **"Ignore SSL Errors"** ✅
-4. Restart Yoda or reload VS Code
+4. Restart YACOR or reload VS Code
 
 ### **Method 3: Setup Wizard**
-1. Run **"Yoda: Setup Wizard"** from Command Palette
+1. Run **"YACOR: Setup Wizard"** from Command Palette
 2. The wizard automatically enables SSL bypass during setup
 
 ---
@@ -83,19 +83,19 @@ The extension now handles these certificate-related errors:
 ## 🔍 **Testing The Fix**
 
 1. **Restart VS Code** to ensure the new extension is loaded
-2. **Run Setup**: `Ctrl+Shift+P` → `Yoda: Setup Wizard`
+2. **Run Setup**: `Ctrl+Shift+P` → `YACOR: Setup Wizard`
 3. **Test Analysis**: Open a Python file and save it (auto-analysis should work)
-4. **Check Status**: Look for `✅ Yoda Ready` in the status bar
+4. **Check Status**: Look for `✅ YACOR Ready` in the status bar
 
 ---
 
 ## 🐛 **Still Having Issues?**
 
 ### **If SSL errors persist:**
-1. Try **"Yoda: Setup Wizard"** again
+1. Try **"YACOR: Setup Wizard"** again
 2. Manually enable **"Ignore SSL Errors"** in settings
 3. Restart VS Code completely
-4. Check the **Output panel** (View → Output → "Yoda Code Mentor") for detailed logs
+4. Check the **Output panel** (View → Output → "YACOR Code Reviewer") for detailed logs
 
 ### **Advanced Troubleshooting:**
 ```bash

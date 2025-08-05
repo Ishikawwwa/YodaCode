@@ -1,10 +1,10 @@
 {
-  "name": "yoda-code-mentor",
-  "displayName": "Yoda - Code Reviewer",
-  "description": "AI-powered multi-language code reviewer that checks your code against best practices using GigaChat. Supports Python, JavaScript, TypeScript, Java, C#, C++ and more.",
+  "name": "yacor-code-reviewer",
+  "displayName": "YACOR - Yet Another COde Reviewer",
+  "description": "YACOR: Yet Another COde Reviewer. AI-powered code review and best practices for Python, JavaScript, TypeScript, Java, C#, and C++.",
   "version": "1.1.0",
   "publisher": "your-company",
-  "icon": "yoda-icon.png",
+  "icon": "YACOR_icon.png",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -13,19 +13,17 @@
     "Other"
   ],
   "keywords": [
+    "yacor",
+    "code review",
     "ai",
-    "code-review",
-    "best-practices",
-    "multi-language",
     "python",
     "javascript",
     "typescript",
     "java",
-    "csharp",
-    "cpp",
-    "gigachat",
-    "mentor",
-    "static-analysis"
+    "c#",
+    "c++",
+    "linter",
+    "best practices"
   ],
   "activationEvents": [
     "onLanguage:python",
@@ -39,131 +37,131 @@
   "contributes": {
     "commands": [
       {
-        "command": "yoda.analyzeFile",
-        "title": "Yoda: Analyze Current File",
+        "command": "yacor.analyzeFile",
+        "title": "YACOR: Analyze Current File",
         "icon": "$(search)"
       },
       {
-        "command": "yoda.analyzeWorkspace",
-        "title": "Yoda: Analyze All Files",
+        "command": "yacor.analyzeWorkspace",
+        "title": "YACOR: Analyze All Files",
         "icon": "$(folder)"
       },
       {
-        "command": "yoda.configureBestPractices",
-        "title": "Yoda: Configure Best Practices",
+        "command": "yacor.configureBestPractices",
+        "title": "YACOR: Configure Best Practices",
         "icon": "$(settings-gear)"
       },
       {
-        "command": "yoda.configureApiKey",
-        "title": "Yoda: Setup GigaChat API Key",
+        "command": "yacor.configureApiKey",
+        "title": "YACOR: Setup GigaChat API Key",
         "icon": "$(key)"
       },
       {
-        "command": "yoda.showSetupWizard",
-        "title": "Yoda: Setup Wizard",
+        "command": "yacor.showSetupWizard",
+        "title": "YACOR: Setup Wizard",
         "icon": "$(wand)"
       },
       {
-        "command": "yoda.analyzeCrossFile",
-        "title": "Yoda: Cross-File Analysis",
+        "command": "yacor.analyzeCrossFile",
+        "title": "YACOR: Cross-File Analysis",
         "icon": "$(files)"
       },
       {
-        "command": "yoda.selectModel",
-        "title": "Yoda: Select GigaChat Model",
+        "command": "yacor.selectModel",
+        "title": "YACOR: Select GigaChat Model",
         "icon": "$(robot)"
       },
       {
-        "command": "yoda.refreshModels",
-        "title": "Yoda: Refresh Available Models",
+        "command": "yacor.refreshModels",
+        "title": "YACOR: Refresh Available Models",
         "icon": "$(refresh)"
       },
       {
-        "command": "yoda.showCurrentModel",
-        "title": "Yoda: Show Current Model",
+        "command": "yacor.showCurrentModel",
+        "title": "YACOR: Show Current Model",
         "icon": "$(info)"
       },
       {
-        "command": "yoda.configureCertificateAuth",
-        "title": "Yoda: Configure Certificate Authentication",
+        "command": "yacor.configureCertificateAuth",
+        "title": "YACOR: Configure Certificate Authentication",
         "icon": "$(file-certificate)"
       },
       {
-        "command": "yoda.testConnection",
-        "title": "Yoda: Test GigaChat Connection",
+        "command": "yacor.testConnection",
+        "title": "YACOR: Test GigaChat Connection",
         "icon": "$(plug)"
       }
     ],
     "menus": {
       "explorer/context": [
         {
-          "command": "yoda.analyzeFile",
+          "command": "yacor.analyzeFile",
           "when": "resourceExtname =~ /\\.(py|js|ts|java|cs|cpp|c)$/",
-          "group": "yoda"
+          "group": "yacor"
         }
       ],
       "editor/context": [
         {
-          "command": "yoda.analyzeFile",
+          "command": "yacor.analyzeFile",
           "when": "editorLangId =~ /(python|javascript|typescript|java|csharp|cpp)/",
-          "group": "yoda"
+          "group": "yacor"
         }
       ],
       "commandPalette": [
         {
-          "command": "yoda.analyzeFile",
+          "command": "yacor.analyzeFile",
           "when": "editorIsOpen"
         },
         {
-          "command": "yoda.analyzeWorkspace"
+          "command": "yacor.analyzeWorkspace"
         },
         {
-          "command": "yoda.configureBestPractices"
+          "command": "yacor.configureBestPractices"
         },
         {
-          "command": "yoda.configureApiKey"
+          "command": "yacor.configureApiKey"
         },
         {
-          "command": "yoda.showSetupWizard"
+          "command": "yacor.showSetupWizard"
         },
         {
-          "command": "yoda.analyzeCrossFile"
+          "command": "yacor.analyzeCrossFile"
         },
         {
-          "command": "yoda.selectModel"
+          "command": "yacor.selectModel"
         },
         {
-          "command": "yoda.refreshModels"
+          "command": "yacor.refreshModels"
         },
         {
-          "command": "yoda.showCurrentModel"
+          "command": "yacor.showCurrentModel"
         }
       ]
     },
     "configuration": {
-      "title": "Yoda Code Mentor",
+      "title": "YACOR Code Reviewer",
       "properties": {
-        "yoda.gigachat.apiKey": {
+        "yacor.gigachat.apiKey": {
           "type": "string",
           "default": "",
           "description": "🔑 GigaChat Client Secret Key (in Base64 format). Get yours at https://developers.sber.ru/studio",
           "scope": "application",
           "order": 0
         },
-        "yoda.setup.completed": {
+        "yacor.setup.completed": {
           "type": "boolean",
           "default": false,
           "description": "Internal flag to track if initial setup is completed",
           "scope": "application"
         },
-        "yoda.gigachat.baseUrl": {
+        "yacor.gigachat.baseUrl": {
           "type": "string",
           "default": "",
           "description": "🌐 Custom GigaChat API base URL (leave empty for default). Example: https://gigachat.devices.sberbank.ru/api/v1",
           "scope": "application",
           "order": 1
         },
-        "yoda.gigachat.authMethod": {
+        "yacor.gigachat.authMethod": {
           "type": "string",
           "default": "apiKey",
           "enum": ["apiKey", "certificate"],
@@ -175,54 +173,54 @@
           "scope": "application",
           "order": 2
         },
-        "yoda.gigachat.certificatePath": {
+        "yacor.gigachat.certificatePath": {
           "type": "string",
           "default": "",
           "description": "📄 Path to client certificate file (.crt or .pem) for certificate authentication",
           "scope": "application",
           "order": 3
         },
-        "yoda.gigachat.privateKeyPath": {
+        "yacor.gigachat.privateKeyPath": {
           "type": "string",
           "default": "",
           "description": "🔑 Path to private key file (.key or .pem) for certificate authentication", 
           "scope": "application",
           "order": 4
         },
-        "yoda.gigachat.certificatePassphrase": {
+        "yacor.gigachat.certificatePassphrase": {
           "type": "string",
           "default": "",
           "description": "🔒 Passphrase for the private key (optional, leave empty if not needed)",
           "scope": "application",
           "order": 5
         },
-        "yoda.gigachat.ignoreSSLErrors": {
+        "yacor.gigachat.ignoreSSLErrors": {
           "type": "boolean",
           "default": true,
           "description": "🔒 Ignore SSL certificate errors when connecting to GigaChat (recommended for Russian certificates)",
           "scope": "application",
           "order": 6
         },
-        "yoda.gigachat.model": {
+        "yacor.gigachat.model": {
           "type": "string",
           "default": "GigaChat:latest",
           "description": "🤖 GigaChat model to use for code analysis",
           "scope": "machine-overridable",
           "order": 7
         },
-        "yoda.gigachat.availableModels": {
+        "yacor.gigachat.availableModels": {
           "type": "array",
           "default": ["GigaChat:latest", "GigaChat-Pro", "GigaChat-Plus"],
           "description": "📋 List of available GigaChat models (automatically updated)",
           "scope": "application"
         },
-        "yoda.autoAnalyze": {
+        "yacor.autoAnalyze": {
           "type": "boolean",
           "default": true,
           "description": "Automatically analyze files when they are saved",
           "scope": "resource"
         },
-        "yoda.bestPractices": {
+        "yacor.bestPractices": {
           "type": "object",
           "default": {
             "general": [
@@ -359,14 +357,14 @@
           "description": "Comprehensive best practices for multiple programming languages",
           "scope": "resource"
         },
-        "yoda.severity": {
+        "yacor.severity": {
           "type": "string",
           "enum": ["error", "warning", "info"],
           "default": "warning",
           "description": "Default severity level for best practice violations",
           "scope": "resource"
         },
-        "yoda.crossFileAnalysis": {
+        "yacor.crossFileAnalysis": {
           "type": "boolean",
           "default": true,
           "description": "🔗 Enable cross-file analysis to detect issues spanning multiple files (imports, naming conflicts, etc.)",

@@ -1,6 +1,6 @@
-# Yoda Extension - Quick Start Example
+# YACOR Extension - Quick Start Example
 
-This example shows how to quickly get started with the Yoda VS Code extension.
+This example shows how to quickly get started with the YACOR VS Code extension.
 
 ## Step 1: Get GigaChat API Access
 
@@ -12,15 +12,15 @@ This example shows how to quickly get started with the Yoda VS Code extension.
 ## Step 2: Configure the Extension
 
 1. Open VS Code Settings (`Ctrl+,` or `Cmd+,`)
-2. Search for "Yoda"
-3. Set the `yoda.gigachat.apiKey` to your Base64 Client Secret Key
+2. Search for "YACOR"
+3. Set the `yacor.gigachat.apiKey` to your Base64 Client Secret Key
 
 Example configuration in `settings.json`:
 ```json
 {
-  "yoda.gigachat.apiKey": "your-base64-client-secret-key-here",
-  "yoda.autoAnalyze": true,
-  "yoda.severity": "warning"
+  "yacor.gigachat.apiKey": "your-base64-client-secret-key-here",
+  "yacor.autoAnalyze": true,
+  "yacor.severity": "warning"
 }
 ```
 
@@ -30,7 +30,7 @@ Example configuration in `settings.json`:
 2. The extension will automatically analyze the file when you save it
 3. Or manually trigger analysis:
    - Open Command Palette (`Ctrl+Shift+P`)
-   - Type "Yoda: Analyze Current File"
+   - Type "YACOR: Analyze Current File"
    - Press Enter
 
 ## Example Analysis
@@ -43,15 +43,15 @@ function calculateSum(a, b) {
 }
 ```
 
-Yoda might suggest:
+YACOR might suggest:
 - Use `const` or `let` instead of `var`
 - Consider more descriptive variable names
 - Add type checking or JSDoc comments
 
 ## Commands Available
 
-- **Yoda: Analyze Current File** - Analyze the currently open file
-- **Yoda: Analyze All Files** - Analyze all supported files in workspace
-- **Yoda: Configure Best Practices** - Open settings to customize rules
+- **YACOR: Analyze Current File** - Analyze the currently open file
+- **YACOR: Analyze All Files** - Analyze all supported files in workspace
+- **YACOR: Configure Best Practices** - Open settings to customize rules
 
-That's it! Yoda will help guide you to write cleaner, better code following your company's best practices. 
+That's it! YACOR will help guide you to write cleaner, better code following your company's best practices. 

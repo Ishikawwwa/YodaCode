@@ -26,11 +26,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const gigachat_node_1 = require("gigachat-node");
-class YodaCodeMentor {
+class YacorCodeReviewer {
     constructor(context) {
         this.gigaChat = null;
         this.context = context;
-        this.diagnosticCollection = vscode.languages.createDiagnosticCollection('yoda');
+        this.diagnosticCollection = vscode.languages.createDiagnosticCollection('yacor');
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
         this.initializeGigaChat();
         this.setupEventListeners(context);
@@ -39,7 +39,7 @@ class YodaCodeMentor {
         context.subscriptions.push(this.statusBarItem);
     }
     async initializeGigaChat() {
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         const authMethod = config.get('gigachat.authMethod') || 'apiKey';
         const baseUrl = config.get('gigachat.baseUrl');
         const ignoreSSLErrors = config.get('gigachat.ignoreSSLErrors');
@@ -47,12 +47,12 @@ class YodaCodeMentor {
         if (authMethod === 'apiKey') {
             const apiKey = config.get('gigachat.apiKey');
             if (!apiKey) {
-                vscode.window.showWarningMessage('Yoda: GigaChat API key not configured. Please set it in settings.', 'Setup Wizard', 'Configure API Key').then(selection => {
+                vscode.window.showWarningMessage('Yacor: GigaChat API key not configured. Please set it in settings.', 'Setup Wizard', 'Configure API Key').then(selection => {
                     if (selection === 'Setup Wizard') {
-                        vscode.commands.executeCommand('yoda.showSetupWizard');
+                        vscode.commands.executeCommand('yacor.showSetupWizard');
                     }
                     else if (selection === 'Configure API Key') {
-                        vscode.commands.executeCommand('yoda.configureApiKey');
+                        vscode.commands.executeCommand('yacor.configureApiKey');
                     }
                 });
                 return;
@@ -62,12 +62,12 @@ class YodaCodeMentor {
             const certPath = config.get('gigachat.certificatePath');
             const keyPath = config.get('gigachat.privateKeyPath');
             if (!certPath || !keyPath) {
-                vscode.window.showWarningMessage('Yoda: Certificate authentication requires both certificate and private key files.', 'Setup Wizard', 'Configure Certificate Auth').then(selection => {
+                vscode.window.showWarningMessage('Yacor: Certificate authentication requires both certificate and private key files.', 'Setup Wizard', 'Configure Certificate Auth').then(selection => {
                     if (selection === 'Setup Wizard') {
-                        vscode.commands.executeCommand('yoda.showSetupWizard');
+                        vscode.commands.executeCommand('yacor.showSetupWizard');
                     }
                     else if (selection === 'Configure Certificate Auth') {
-                        vscode.commands.executeCommand('yoda.configureCertificateAuth');
+                        vscode.commands.executeCommand('yacor.configureCertificateAuth');
                     }
                 });
                 return;
@@ -75,9 +75,9 @@ class YodaCodeMentor {
             // Validate certificate files exist
             const validationResult = await this.validateCertificateFiles(certPath, keyPath);
             if (!validationResult.valid) {
-                vscode.window.showErrorMessage(`Yoda: Certificate validation failed: ${validationResult.error}`, 'Configure Certificate Auth').then(selection => {
+                vscode.window.showErrorMessage(`Yacor: Certificate validation failed: ${validationResult.error}`, 'Configure Certificate Auth').then(selection => {
                     if (selection === 'Configure Certificate Auth') {
-                        vscode.commands.executeCommand('yoda.configureCertificateAuth');
+                        vscode.commands.executeCommand('yacor.configureCertificateAuth');
                     }
                 });
                 return;
@@ -127,8 +127,8 @@ class YodaCodeMentor {
             this.gigaChat = new gigachat_node_1.GigaChat(gigaChatConfig);
             // Create the access token
             await this.gigaChat.createToken();
-            this.statusBarItem.text = "$(check) Yoda Ready";
-            this.statusBarItem.tooltip = "Yoda Code Mentor is ready to analyze your code";
+            this.statusBarItem.text = "$(check) Yacor Ready";
+            this.statusBarItem.tooltip = "Yacor Code Mentor is ready to analyze your code";
             this.statusBarItem.show();
         }
         catch (error) {
@@ -136,14 +136,14 @@ class YodaCodeMentor {
             const errorMessage = error instanceof Error ? error.message : String(error);
             // Handle specific certificate errors
             if (errorMessage.includes('certificate') || errorMessage.includes('SSL') || errorMessage.includes('TLS')) {
-                vscode.window.showErrorMessage(`🔒 Yoda: SSL Certificate Error - ${errorMessage}`, 'Fix SSL Issues', 'Open Settings', 'Help').then(async (selection) => {
+                vscode.window.showErrorMessage(`🔒 Yacor: SSL Certificate Error - ${errorMessage}`, 'Fix SSL Issues', 'Open Settings', 'Help').then(async (selection) => {
                     if (selection === 'Fix SSL Issues') {
                         await config.update('gigachat.ignoreSSLErrors', true, vscode.ConfigurationTarget.Global);
-                        vscode.window.showInformationMessage('✅ SSL errors are now ignored. Restarting Yoda...');
+                        vscode.window.showInformationMessage('✅ SSL errors are now ignored. Restarting Yacor...');
                         await this.initializeGigaChat();
                     }
                     else if (selection === 'Open Settings') {
-                        vscode.commands.executeCommand('workbench.action.openSettings', 'yoda.gigachat');
+                        vscode.commands.executeCommand('workbench.action.openSettings', 'yacor.gigachat');
                     }
                     else if (selection === 'Help') {
                         this.showSSLHelpDialog();
@@ -151,38 +151,38 @@ class YodaCodeMentor {
                 });
             }
             else {
-                vscode.window.showErrorMessage(`Yoda: Failed to initialize GigaChat: ${errorMessage}`, 'Retry', 'Configure API Key').then(selection => {
+                vscode.window.showErrorMessage(`Yacor: Failed to initialize GigaChat: ${errorMessage}`, 'Retry', 'Configure API Key').then(selection => {
                     if (selection === 'Retry') {
                         this.initializeGigaChat();
                     }
                     else if (selection === 'Configure API Key') {
-                        vscode.commands.executeCommand('yoda.configureApiKey');
+                        vscode.commands.executeCommand('yacor.configureApiKey');
                     }
                 });
             }
-            this.statusBarItem.text = "$(error) Yoda Error";
-            this.statusBarItem.tooltip = `Yoda Code Mentor failed: ${errorMessage}`;
+            this.statusBarItem.text = "$(error) Yacor Error";
+            this.statusBarItem.tooltip = `Yacor Code Mentor failed: ${errorMessage}`;
             this.statusBarItem.show();
         }
     }
     setupEventListeners(context) {
         // Auto-analyze on file save
         const onSave = vscode.workspace.onDidSaveTextDocument((document) => {
-            const config = vscode.workspace.getConfiguration('yoda');
+            const config = vscode.workspace.getConfiguration('yacor');
             if (config.get('autoAnalyze')) {
                 this.analyzeDocument(document);
             }
         });
         // Listen for configuration changes
         const onConfigChange = vscode.workspace.onDidChangeConfiguration((event) => {
-            if (event.affectsConfiguration('yoda.gigachat')) {
+            if (event.affectsConfiguration('yacor.gigachat')) {
                 this.initializeGigaChat();
             }
         });
         context.subscriptions.push(onSave, onConfigChange);
     }
     registerCommands(context) {
-        const analyzeFileCommand = vscode.commands.registerCommand('yoda.analyzeFile', () => {
+        const analyzeFileCommand = vscode.commands.registerCommand('yacor.analyzeFile', () => {
             const editor = vscode.window.activeTextEditor;
             if (editor) {
                 this.analyzeDocument(editor.document);
@@ -191,34 +191,34 @@ class YodaCodeMentor {
                 vscode.window.showWarningMessage('No active file to analyze');
             }
         });
-        const analyzeWorkspaceCommand = vscode.commands.registerCommand('yoda.analyzeWorkspace', async () => {
+        const analyzeWorkspaceCommand = vscode.commands.registerCommand('yacor.analyzeWorkspace', async () => {
             await this.analyzeWorkspace();
         });
-        const configureBestPracticesCommand = vscode.commands.registerCommand('yoda.configureBestPractices', () => {
-            vscode.commands.executeCommand('workbench.action.openSettings', 'yoda.bestPractices');
+        const configureBestPracticesCommand = vscode.commands.registerCommand('yacor.configureBestPractices', () => {
+            vscode.commands.executeCommand('workbench.action.openSettings', 'yacor.bestPractices');
         });
-        const configureApiKeyCommand = vscode.commands.registerCommand('yoda.configureApiKey', async () => {
+        const configureApiKeyCommand = vscode.commands.registerCommand('yacor.configureApiKey', async () => {
             await this.showApiKeySetup();
         });
-        const showSetupWizardCommand = vscode.commands.registerCommand('yoda.showSetupWizard', async () => {
+        const showSetupWizardCommand = vscode.commands.registerCommand('yacor.showSetupWizard', async () => {
             await this.showSetupWizard();
         });
-        const analyzeCrossFileCommand = vscode.commands.registerCommand('yoda.analyzeCrossFile', async () => {
+        const analyzeCrossFileCommand = vscode.commands.registerCommand('yacor.analyzeCrossFile', async () => {
             await this.performCrossFileAnalysis();
         });
-        const selectModelCommand = vscode.commands.registerCommand('yoda.selectModel', async () => {
+        const selectModelCommand = vscode.commands.registerCommand('yacor.selectModel', async () => {
             await this.selectGigaChatModel();
         });
-        const refreshModelsCommand = vscode.commands.registerCommand('yoda.refreshModels', async () => {
+        const refreshModelsCommand = vscode.commands.registerCommand('yacor.refreshModels', async () => {
             await this.refreshAvailableModels();
         });
-        const showCurrentModelCommand = vscode.commands.registerCommand('yoda.showCurrentModel', async () => {
+        const showCurrentModelCommand = vscode.commands.registerCommand('yacor.showCurrentModel', async () => {
             await this.showCurrentModel();
         });
-        const configureCertificateAuthCommand = vscode.commands.registerCommand('yoda.configureCertificateAuth', async () => {
+        const configureCertificateAuthCommand = vscode.commands.registerCommand('yacor.configureCertificateAuth', async () => {
             await this.showCertificateAuthSetup();
         });
-        const testConnectionCommand = vscode.commands.registerCommand('yoda.testConnection', async () => {
+        const testConnectionCommand = vscode.commands.registerCommand('yacor.testConnection', async () => {
             await this.testGigaChatConnection();
         });
         context.subscriptions.push(analyzeFileCommand, analyzeWorkspaceCommand, configureBestPracticesCommand, configureApiKeyCommand, showSetupWizardCommand, analyzeCrossFileCommand, selectModelCommand, refreshModelsCommand, showCurrentModelCommand, configureCertificateAuthCommand, testConnectionCommand);
@@ -227,23 +227,23 @@ class YodaCodeMentor {
         if (!this.gigaChat || !this.isSupportedLanguage(document.languageId)) {
             return;
         }
-        this.statusBarItem.text = "$(sync~spin) Yoda Analyzing...";
+        this.statusBarItem.text = "$(sync~spin) Yacor Analyzing...";
         try {
             const analysis = await this.performCodeAnalysis(document);
             this.updateDiagnostics(document, analysis, document.getText());
-            this.statusBarItem.text = `$(check) Yoda: ${analysis.length} issues found`;
+            this.statusBarItem.text = `$(check) Yacor: ${analysis.length} issues found`;
             setTimeout(() => {
-                this.statusBarItem.text = "$(check) Yoda Ready";
+                this.statusBarItem.text = "$(check) Yacor Ready";
             }, 3000);
         }
         catch (error) {
             console.error('Analysis failed:', error);
-            vscode.window.showErrorMessage(`Yoda analysis failed: ${error}`);
-            this.statusBarItem.text = "$(error) Yoda Error";
+            vscode.window.showErrorMessage(`Yacor analysis failed: ${error}`);
+            this.statusBarItem.text = "$(error) Yacor Error";
         }
     }
     async performCodeAnalysis(document) {
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         const bestPractices = config.get('bestPractices');
         const languageRules = bestPractices?.[document.languageId] || [];
         const generalRules = bestPractices?.general || [];
@@ -263,7 +263,7 @@ class YodaCodeMentor {
             return this.parseAnalysisResponse(response.choices[0].message.content);
         }
         catch (error) {
-            console.error('Yoda: GigaChat API error:', error);
+            console.error('Yacor: GigaChat API error:', error);
             throw error;
         }
     }
@@ -428,7 +428,7 @@ Special focus for C code:
         };
         const languageSpecificGuidance = getLanguageGuidance(language);
         const languageName = language.charAt(0).toUpperCase() + language.slice(1);
-        return `You are Yoda, a wise code mentor specializing in multi-language development with expertise in ${languageName}. Analyze the following ${language} code against these best practices:
+        return `You are Yacor, a wise code mentor specializing in multi-language development with expertise in ${languageName}. Analyze the following ${language} code against these best practices:
 
 ${rules.map(rule => `- ${rule}`).join('\n')}
 ${languageSpecificGuidance}
@@ -640,7 +640,7 @@ If no issues are found, return: {"issues": []}`;
         return [{
                 line: 0,
                 column: 0,
-                message: `Yoda suggests: ${response.substring(0, 200)}${response.length > 200 ? '...' : ''}`,
+                message: `Yacor suggests: ${response.substring(0, 200)}${response.length > 200 ? '...' : ''}`,
                 severity: this.getSeverity('info'),
                 rule: 'general-feedback'
             }];
@@ -654,7 +654,7 @@ If no issues are found, return: {"issues": []}`;
             case 'info':
                 return vscode.DiagnosticSeverity.Information;
             default:
-                const config = vscode.workspace.getConfiguration('yoda');
+                const config = vscode.workspace.getConfiguration('yacor');
                 const defaultSeverity = config.get('severity');
                 return this.getSeverity(defaultSeverity || 'warning');
         }
@@ -691,8 +691,8 @@ If no issues are found, return: {"issues": []}`;
             // Create the range
             const range = new vscode.Range(lineNumber, startColumn, lineNumber, endColumn);
             console.log(`Diagnostic ${index}: Line ${lineNumber + 1} (${validated.confidence}), Col ${startColumn}-${endColumn}, Message: ${issue.message.substring(0, 50)}...`);
-            const diagnostic = new vscode.Diagnostic(range, `[Yoda] ${issue.message}`, issue.severity);
-            diagnostic.source = 'Yoda Code Mentor';
+            const diagnostic = new vscode.Diagnostic(range, `[Yacor] ${issue.message}`, issue.severity);
+            diagnostic.source = 'Yacor Code Mentor';
             diagnostic.code = issue.rule;
             return diagnostic;
         });
@@ -717,7 +717,7 @@ If no issues are found, return: {"issues": []}`;
         });
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'Yoda is analyzing your workspace...',
+            title: 'Yacor is analyzing your workspace...',
             cancellable: true
         }, async (progress, token) => {
             for (let i = 0; i < files.length; i++) {
@@ -744,7 +744,7 @@ If no issues are found, return: {"issues": []}`;
         return supportedLanguages.includes(languageId);
     }
     async showApiKeySetup() {
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         const currentKey = config.get('gigachat.apiKey') || '';
         const apiKey = await vscode.window.showInputBox({
             prompt: '🔑 Enter your GigaChat Client Secret Key (Base64 format)',
@@ -770,9 +770,9 @@ If no issues are found, return: {"issues": []}`;
             await config.update('setup.completed', true, vscode.ConfigurationTarget.Global);
             // Ensure SSL errors are ignored by default (common with GigaChat)
             await config.update('gigachat.ignoreSSLErrors', true, vscode.ConfigurationTarget.Global);
-            vscode.window.showInformationMessage('✅ GigaChat API key configured successfully! Yoda is ready to analyze your multi-language codebase.', 'Test Analysis').then(selection => {
+            vscode.window.showInformationMessage('✅ GigaChat API key configured successfully! Yacor is ready to analyze your multi-language codebase.', 'Test Analysis').then(selection => {
                 if (selection === 'Test Analysis') {
-                    vscode.commands.executeCommand('yoda.analyzeFile');
+                    vscode.commands.executeCommand('yacor.analyzeFile');
                 }
             });
             // Reinitialize GigaChat with new key
@@ -780,25 +780,25 @@ If no issues are found, return: {"issues": []}`;
         }
     }
     async showSetupWizard() {
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         const isSetupCompleted = config.get('setup.completed');
         if (isSetupCompleted) {
-            const action = await vscode.window.showInformationMessage('🧙‍♂️ Yoda is already configured! What would you like to do?', 'Update API Key', 'Configure Best Practices', 'Test Analysis');
+            const action = await vscode.window.showInformationMessage('🧙‍♂️ Yacor is already configured! What would you like to do?', 'Update API Key', 'Configure Best Practices', 'Test Analysis');
             switch (action) {
                 case 'Update API Key':
                     await this.showApiKeySetup();
                     break;
                 case 'Configure Best Practices':
-                    vscode.commands.executeCommand('yoda.configureBestPractices');
+                    vscode.commands.executeCommand('yacor.configureBestPractices');
                     break;
                 case 'Test Analysis':
-                    vscode.commands.executeCommand('yoda.analyzeFile');
+                    vscode.commands.executeCommand('yacor.analyzeFile');
                     break;
             }
             return;
         }
         // Welcome message
-        const startSetup = await vscode.window.showInformationMessage(`🧙‍♂️ Welcome to Yoda - Code Reviewer!
+        const startSetup = await vscode.window.showInformationMessage(`🧙‍♂️ Welcome to Yacor - Code Reviewer!
 
 Let's get you set up to analyze your code across multiple languages with AI-powered insights.
 
@@ -822,7 +822,7 @@ Ready to enter your API key?`, 'Yes, I have my key', 'Open Sber Portal', 'Skip f
         if (needsKey === 'Yes, I have my key') {
             await this.showApiKeySetup();
             // Step 2: Test analysis
-            const testAnalysis = await vscode.window.showInformationMessage('🔍 Setup Complete! Would you like to test Yoda on some Python code?', 'Create Test File', 'Analyze Current File', 'Done');
+            const testAnalysis = await vscode.window.showInformationMessage('🔍 Setup Complete! Would you like to test Yacor on some Python code?', 'Create Test File', 'Analyze Current File', 'Done');
             if (testAnalysis === 'Create Test File') {
                 // Ask user which language to test
                 const language = await vscode.window.showQuickPick([
@@ -833,12 +833,12 @@ Ready to enter your API key?`, 'Yes, I have my key', 'Open Sber Portal', 'Skip f
                 ], { placeHolder: 'Which language would you like to test?' });
                 if (language) {
                     const testCode = {
-                        python: `# Test file for Yoda Code Reviewer - Python
+                        python: `# Test file for Yacor Code Reviewer - Python
 def greet(name):
     print("Hello " + name)  # Should use f-strings and logging
 
 greet("World")`,
-                        javascript: `// Test file for Yoda Code Reviewer - JavaScript
+                        javascript: `// Test file for Yacor Code Reviewer - JavaScript
 var userName = "World";  // Should use const/let
 
 function greet(name) {
@@ -846,13 +846,13 @@ function greet(name) {
 }
 
 console.log(greet(userName));`,
-                        typescript: `// Test file for Yoda Code Reviewer - TypeScript
+                        typescript: `// Test file for Yacor Code Reviewer - TypeScript
 function greet(name: any): any {  // Should avoid 'any' type
     return "Hello " + name;
 }
 
 const result = greet("World");`,
-                        java: `// Test file for Yoda Code Reviewer - Java
+                        java: `// Test file for Yacor Code Reviewer - Java
 public class Test {
     public String name;  // Should be private with getter/setter
     
@@ -866,20 +866,20 @@ public class Test {
                         language: language.value === 'java' ? 'java' : language.value
                     });
                     await vscode.window.showTextDocument(doc);
-                    vscode.window.showInformationMessage(`📝 ${language.label} test file created! Save it to trigger analysis, or run "Yoda: Analyze Current File"`);
+                    vscode.window.showInformationMessage(`📝 ${language.label} test file created! Save it to trigger analysis, or run "Yacor: Analyze Current File"`);
                 }
             }
             else if (testAnalysis === 'Analyze Current File') {
-                vscode.commands.executeCommand('yoda.analyzeFile');
+                vscode.commands.executeCommand('yacor.analyzeFile');
             }
         }
     }
     async performCrossFileAnalysis() {
         if (!this.gigaChat) {
-            vscode.window.showErrorMessage('Yoda: GigaChat not initialized. Please configure your API key first.');
+            vscode.window.showErrorMessage('Yacor: GigaChat not initialized. Please configure your API key first.');
             return;
         }
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         const crossFileEnabled = config.get('crossFileAnalysis');
         if (!crossFileEnabled) {
             vscode.window.showInformationMessage('Cross-file analysis is disabled. Enable it in settings?', 'Enable', 'Cancel').then(async (selection) => {
@@ -896,10 +896,10 @@ public class Test {
             vscode.window.showInformationMessage('Cross-file analysis requires at least 2 supported files in the workspace.');
             return;
         }
-        this.statusBarItem.text = "$(sync~spin) Yoda Cross-File Analysis...";
+        this.statusBarItem.text = "$(sync~spin) Yacor Cross-File Analysis...";
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'Yoda is performing cross-file analysis...',
+            title: 'Yacor is performing cross-file analysis...',
             cancellable: true
         }, async (progress, token) => {
             try {
@@ -928,9 +928,9 @@ public class Test {
                 progress.report({ increment: 40, message: 'Updating diagnostics...' });
                 // Update diagnostics for cross-file issues
                 await this.updateCrossFileDiagnostics(crossFileIssues);
-                this.statusBarItem.text = `$(check) Yoda: ${crossFileIssues.length} cross-file issues found`;
+                this.statusBarItem.text = `$(check) Yacor: ${crossFileIssues.length} cross-file issues found`;
                 setTimeout(() => {
-                    this.statusBarItem.text = "$(check) Yoda Ready";
+                    this.statusBarItem.text = "$(check) Yacor Ready";
                 }, 5000);
                 // Show summary
                 if (crossFileIssues.length > 0) {
@@ -947,7 +947,7 @@ public class Test {
             catch (error) {
                 console.error('Cross-file analysis failed:', error);
                 vscode.window.showErrorMessage(`Cross-file analysis failed: ${error}`);
-                this.statusBarItem.text = "$(error) Yoda Error";
+                this.statusBarItem.text = "$(error) Yacor Error";
             }
         });
     }
@@ -968,7 +968,7 @@ public class Test {
             .sort((a, b) => b[1] - a[1])
             .slice(0, 2)
             .map(([lang]) => lang);
-        const prompt = `You are Yoda, a wise code mentor specializing in multi-language cross-file analysis. Analyze these files together to find issues that span multiple files. The codebase primarily uses: ${primaryLanguages.join(', ')}.
+        const prompt = `You are Yacor, a wise code mentor specializing in multi-language cross-file analysis. Analyze these files together to find issues that span multiple files. The codebase primarily uses: ${primaryLanguages.join(', ')}.
 
 ${filesInfo}
 
@@ -1115,7 +1115,7 @@ Focus on issues that only become apparent when analyzing multiple files together
                 const range = new vscode.Range(lineNumber, startColumn, lineNumber, endColumn);
                 console.log(`Cross-file diagnostic: ${fileName} Line ${lineNumber + 1} (converted from ${issue.line}), Col ${startColumn}-${endColumn}, Message: ${issue.message.substring(0, 50)}...`);
                 const diagnostic = new vscode.Diagnostic(range, `[Cross-File] ${issue.message}`, issue.severity);
-                diagnostic.source = 'Yoda Code Mentor';
+                diagnostic.source = 'Yacor Code Mentor';
                 diagnostic.code = 'cross-file';
                 return diagnostic;
             }));
@@ -1138,7 +1138,7 @@ SOLUTIONS:
 
 2. ⚙️ MANUAL FIX:
    • Open VS Code Settings (Ctrl+,)
-   • Search for "Yoda SSL"
+   • Search for "Yacor SSL"
    • Enable "Ignore SSL Errors"
 
 3. 🛡️ ADVANCED (If security is critical):
@@ -1148,24 +1148,24 @@ SOLUTIONS:
 The automatic fix is recommended and commonly used for GigaChat connections.`;
         vscode.window.showInformationMessage(helpMessage, { modal: true }, 'Fix Automatically', 'Open Settings', 'Close').then(async (selection) => {
             if (selection === 'Fix Automatically') {
-                const config = vscode.workspace.getConfiguration('yoda');
+                const config = vscode.workspace.getConfiguration('yacor');
                 await config.update('gigachat.ignoreSSLErrors', true, vscode.ConfigurationTarget.Global);
-                vscode.window.showInformationMessage('✅ SSL errors are now ignored. Restarting Yoda...');
+                vscode.window.showInformationMessage('✅ SSL errors are now ignored. Restarting Yacor...');
                 await this.initializeGigaChat();
             }
             else if (selection === 'Open Settings') {
-                vscode.commands.executeCommand('workbench.action.openSettings', 'yoda.gigachat.ignoreSSLErrors');
+                vscode.commands.executeCommand('workbench.action.openSettings', 'yacor.gigachat.ignoreSSLErrors');
             }
         });
     }
     getSelectedModel() {
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         const model = config.get('gigachat.model');
         console.log('Getting selected model - raw config value:', model);
         console.log('Configuration inspect:', config.inspect('gigachat.model'));
         // Fallback to extension state if config fails
         if (!model || model === 'GigaChat:latest') {
-            const savedModel = this.context.globalState.get('yoda.selectedModel');
+            const savedModel = this.context.globalState.get('yacor.selectedModel');
             if (savedModel) {
                 console.log('Using model from extension state:', savedModel);
                 return savedModel;
@@ -1186,7 +1186,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
             }, async (progress) => {
                 // First refresh the models list
                 await this.refreshAvailableModels(true);
-                const config = vscode.workspace.getConfiguration('yoda');
+                const config = vscode.workspace.getConfiguration('yacor');
                 const availableModels = config.get('gigachat.availableModels') || ['GigaChat:latest'];
                 const currentModel = this.getSelectedModel(); // Use the same method to get current model
                 console.log('Current model from config:', currentModel);
@@ -1216,12 +1216,12 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                         try {
                             console.log(`Attempting to save to ${name} scope...`);
                             // Get fresh config each time
-                            const freshConfig = vscode.workspace.getConfiguration('yoda');
+                            const freshConfig = vscode.workspace.getConfiguration('yacor');
                             await freshConfig.update('gigachat.model', selectedModel.value, target);
                             // Wait longer and then verify the setting was saved
                             await new Promise(resolve => setTimeout(resolve, 500));
                             // Get completely fresh config to check
-                            const verifyConfig = vscode.workspace.getConfiguration('yoda');
+                            const verifyConfig = vscode.workspace.getConfiguration('yacor');
                             const updatedModel = verifyConfig.get('gigachat.model');
                             console.log(`Tried ${name} scope - model after update:`, updatedModel);
                             console.log(`Expected: ${selectedModel.value}, Got: ${updatedModel}`);
@@ -1242,13 +1242,13 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                     }
                     if (success) {
                         // Also save to extension state as backup
-                        await this.context.globalState.update('yoda.selectedModel', selectedModel.value);
+                        await this.context.globalState.update('yacor.selectedModel', selectedModel.value);
                         vscode.window.showInformationMessage(`✅ GigaChat model updated to: ${selectedModel.value} (${scope} scope)`);
                     }
                     else {
                         // Try fallback to extension state
                         try {
-                            await this.context.globalState.update('yoda.selectedModel', selectedModel.value);
+                            await this.context.globalState.update('yacor.selectedModel', selectedModel.value);
                             vscode.window.showInformationMessage(`✅ GigaChat model saved to extension state: ${selectedModel.value} (backup method)`);
                             success = true;
                         }
@@ -1263,10 +1263,10 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                         const result = await vscode.window.showErrorMessage(`❌ Failed to save model selection automatically.`, { modal: true, detail: `Error: ${errorMsg}\n\nWould you like to open VS Code settings to set it manually?` }, 'Open Settings', 'Copy Setting', 'Try Again');
                         switch (result) {
                             case 'Open Settings':
-                                vscode.commands.executeCommand('workbench.action.openSettings', 'yoda.gigachat.model');
+                                vscode.commands.executeCommand('workbench.action.openSettings', 'yacor.gigachat.model');
                                 break;
                             case 'Copy Setting':
-                                const settingJson = `"yoda.gigachat.model": "${selectedModel.value}"`;
+                                const settingJson = `"yacor.gigachat.model": "${selectedModel.value}"`;
                                 await vscode.env.clipboard.writeText(settingJson);
                                 vscode.window.showInformationMessage('Setting copied to clipboard! Paste it in your settings.json');
                                 break;
@@ -1329,7 +1329,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                 'GigaChat-Plus',
                 'GigaChat-Max'
             ];
-            const config = vscode.workspace.getConfiguration('yoda');
+            const config = vscode.workspace.getConfiguration('yacor');
             await config.update('gigachat.availableModels', defaultModels, vscode.ConfigurationTarget.Global);
             console.log('Available models updated:', defaultModels);
         }
@@ -1341,7 +1341,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                 'GigaChat-Pro',
                 'GigaChat-Plus'
             ];
-            const config = vscode.workspace.getConfiguration('yoda');
+            const config = vscode.workspace.getConfiguration('yacor');
             await config.update('gigachat.availableModels', defaultModels, vscode.ConfigurationTarget.Global);
         }
     }
@@ -1355,7 +1355,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
         return descriptions[model] || 'GigaChat model for code analysis';
     }
     async showCurrentModel() {
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         const currentModel = this.getSelectedModel();
         const availableModels = config.get('gigachat.availableModels') || ['GigaChat:latest'];
         const configInspect = config.inspect('gigachat.model');
@@ -1370,7 +1370,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
             `- Workspace: ${configInspect?.workspaceValue || 'Not set'}`,
             `- Folder: ${configInspect?.workspaceFolderValue || 'Not set'}`,
             ``,
-            `💡 **Need to change model?** Use "Yoda: Select GigaChat Model" command.`
+            `💡 **Need to change model?** Use "Yacor: Select GigaChat Model" command.`
         ].join('\n');
         await vscode.window.showInformationMessage(`Current GigaChat Model: ${currentModel}`, { modal: false, detail: 'Click "Show Details" for configuration info' }, 'Show Details', 'Select Different Model', 'Refresh Models').then(async (selection) => {
             switch (selection) {
@@ -1395,7 +1395,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
         this.statusBarItem.dispose();
     }
     async showCertificateAuthSetup() {
-        const config = vscode.workspace.getConfiguration('yoda');
+        const config = vscode.workspace.getConfiguration('yacor');
         // Step 1: Choose certificate file
         const certFileOptions = {
             canSelectMany: false,
@@ -1446,9 +1446,9 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                 await config.update('gigachat.baseUrl', baseUrl.trim(), vscode.ConfigurationTarget.Global);
             }
             await config.update('setup.completed', true, vscode.ConfigurationTarget.Global);
-            vscode.window.showInformationMessage('✅ Certificate authentication configured successfully! Restarting Yoda...', 'Test Connection').then(selection => {
+            vscode.window.showInformationMessage('✅ Certificate authentication configured successfully! Restarting Yacor...', 'Test Connection').then(selection => {
                 if (selection === 'Test Connection') {
-                    vscode.commands.executeCommand('yoda.testConnection');
+                    vscode.commands.executeCommand('yacor.testConnection');
                 }
             });
             // Reinitialize with new settings
@@ -1479,7 +1479,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                         }]
                 });
                 progress.report({ increment: 70, message: 'Connection successful!' });
-                const config = vscode.workspace.getConfiguration('yoda');
+                const config = vscode.workspace.getConfiguration('yacor');
                 const authMethod = config.get('gigachat.authMethod') || 'apiKey';
                 const baseUrl = config.get('gigachat.baseUrl');
                 const connectionInfo = [
@@ -1495,10 +1495,10 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 vscode.window.showErrorMessage(`❌ GigaChat connection failed: ${errorMessage}`, 'Check Settings', 'Setup Wizard').then(selection => {
                     if (selection === 'Check Settings') {
-                        vscode.commands.executeCommand('workbench.action.openSettings', 'yoda.gigachat');
+                        vscode.commands.executeCommand('workbench.action.openSettings', 'yacor.gigachat');
                     }
                     else if (selection === 'Setup Wizard') {
-                        vscode.commands.executeCommand('yoda.showSetupWizard');
+                        vscode.commands.executeCommand('yacor.showSetupWizard');
                     }
                 });
             }
@@ -1506,46 +1506,46 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
     }
 }
 function activate(context) {
-    console.log('Yoda Code Mentor is now active!');
-    const yoda = new YodaCodeMentor(context);
+    console.log('Yacor Code Mentor is now active!');
+    const yacor = new YacorCodeReviewer(context);
     // Check if this is first time setup
-    const config = vscode.workspace.getConfiguration('yoda');
+    const config = vscode.workspace.getConfiguration('yacor');
     const isSetupCompleted = config.get('setup.completed');
     const hasApiKey = config.get('gigachat.apiKey');
     if (!isSetupCompleted || !hasApiKey) {
         // First time setup
-        vscode.window.showInformationMessage('🧙‍♂️ Welcome to Yoda - Python Code Mentor! Ready to improve your Python code?', 'Setup Wizard', 'Configure API Key', 'Later').then(selection => {
+        vscode.window.showInformationMessage('🧙‍♂️ Welcome to Yacor - Python Code Mentor! Ready to improve your Python code?', 'Setup Wizard', 'Configure API Key', 'Later').then(selection => {
             switch (selection) {
                 case 'Setup Wizard':
-                    vscode.commands.executeCommand('yoda.showSetupWizard');
+                    vscode.commands.executeCommand('yacor.showSetupWizard');
                     break;
                 case 'Configure API Key':
-                    vscode.commands.executeCommand('yoda.configureApiKey');
+                    vscode.commands.executeCommand('yacor.configureApiKey');
                     break;
             }
         });
     }
     else {
         // Extension is already configured
-        vscode.window.showInformationMessage('🚀 Yoda is ready to analyze your code in multiple languages!', 'Analyze Current File', 'Analyze Workspace', 'Cross-File Analysis').then(selection => {
+        vscode.window.showInformationMessage('🚀 Yacor is ready to analyze your code in multiple languages!', 'Analyze Current File', 'Analyze Workspace', 'Cross-File Analysis').then(selection => {
             switch (selection) {
                 case 'Analyze Current File':
-                    vscode.commands.executeCommand('yoda.analyzeFile');
+                    vscode.commands.executeCommand('yacor.analyzeFile');
                     break;
                 case 'Analyze Workspace':
-                    vscode.commands.executeCommand('yoda.analyzeWorkspace');
+                    vscode.commands.executeCommand('yacor.analyzeWorkspace');
                     break;
                 case 'Cross-File Analysis':
-                    vscode.commands.executeCommand('yoda.analyzeCrossFile');
+                    vscode.commands.executeCommand('yacor.analyzeCrossFile');
                     break;
             }
         });
     }
-    context.subscriptions.push(yoda);
+    context.subscriptions.push(yacor);
 }
 exports.activate = activate;
 function deactivate() {
-    console.log('Yoda Code Mentor is now deactivated');
+    console.log('Yacor Code Mentor is now deactivated');
 }
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map

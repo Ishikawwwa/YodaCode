@@ -2,7 +2,7 @@
 
 ## 🎉 **NEW FEATURE: Cross-File Analysis!**
 
-Yoda now analyzes **multiple files together** to detect issues that only become apparent when looking at your entire codebase, not just individual files!
+YACOR now analyzes **multiple files together** to detect issues that only become apparent when looking at your entire codebase, not just individual files!
 
 ---
 
@@ -26,19 +26,19 @@ Yoda now analyzes **multiple files together** to detect issues that only become 
 
 ### **Method 1: Command Palette**
 1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
-2. Type: **`Yoda: Cross-File Analysis`**
-3. Press Enter and watch Yoda analyze your entire codebase! ✨
+2. Type: **`YACOR: Cross-File Analysis`**
+3. Press Enter and watch YACOR analyze your entire codebase! ✨
 
 ### **Method 2: Auto-enable in Settings**
 1. Open VS Code Settings (`Ctrl+,`)
-2. Search for: **`Yoda Cross`**
+2. Search for: **`YACOR Cross`**
 3. Enable: **`🔗 Enable cross-file analysis`** ✅
 
 ---
 
 ## 🔍 **What It Detects**
 
-I've created example files that demonstrate cross-file issues. Here's what Yoda will catch:
+I've created example files that demonstrate cross-file issues. Here's what YACOR will catch:
 
 ### **1. 📦 Import Issues**
 ```python
@@ -90,7 +90,7 @@ I've created files with intentional cross-file issues:
 - **`user_service.py`** - Service that uses models inconsistently  
 - **`main.py`** - Main file with import and usage issues
 
-**🔍 Try running cross-file analysis to see what Yoda finds!**
+**🔍 Try running cross-file analysis to see what YACOR finds!**
 
 ---
 
@@ -117,7 +117,7 @@ Cross-file issues appear in the **Problems panel** with special markers:
 ### **Enable/Disable Cross-File Analysis**
 ```json
 {
-  "yoda.crossFileAnalysis": true  // Enable cross-file analysis
+  "yacor.crossFileAnalysis": true  // Enable cross-file analysis
 }
 ```
 
@@ -144,7 +144,7 @@ Cross-file issues appear in the **Problems panel** with special markers:
 
 ### **Quick Test:**
 1. **Restart VS Code** to load the updated extension
-2. **Run Cross-File Analysis**: `Ctrl+Shift+P` → `Yoda: Cross-File Analysis`
+2. **Run Cross-File Analysis**: `Ctrl+Shift+P` → `YACOR: Cross-File Analysis`
 3. **Check Results**: Press `Ctrl+Shift+M` to see cross-file issues
 4. **Look for**: `[Cross-File]` entries in the Problems panel
 
