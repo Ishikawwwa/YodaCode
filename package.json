@@ -199,14 +199,14 @@
           "default": true,
           "description": "🔒 Ignore SSL certificate errors when connecting to GigaChat (recommended for Russian certificates)",
           "scope": "application",
-          "order": 6
+          "order": 2
         },
         "yacor.gigachat.model": {
           "type": "string",
           "default": "GigaChat:latest",
           "description": "🤖 GigaChat model to use for code analysis",
           "scope": "machine-overridable",
-          "order": 7
+          "order": 3
         },
         "yacor.gigachat.availableModels": {
           "type": "array",
