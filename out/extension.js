@@ -39,7 +39,6 @@ class YacorCodeReviewer {
         context.subscriptions.push(this.statusBarItem);
     }
     async initializeGigaChat() {
-<<<<<<< HEAD
         const config = vscode.workspace.getConfiguration('yacor');
         const authMethod = config.get('gigachat.authMethod') || 'apiKey';
         const baseUrl = config.get('gigachat.baseUrl');
@@ -48,7 +47,7 @@ class YacorCodeReviewer {
         if (authMethod === 'apiKey') {
             const apiKey = config.get('gigachat.apiKey');
             if (!apiKey) {
-                vscode.window.showWarningMessage('Yacor: GigaChat API key not configured. Please set it in settings.', 'Setup Wizard', 'Configure API Key').then(selection => {
+                vscode.window.showWarningMessage('YACOR: GigaChat API key not configured. Please set it in settings.', 'Setup Wizard', 'Configure API Key').then(selection => {
                     if (selection === 'Setup Wizard') {
                         vscode.commands.executeCommand('yacor.showSetupWizard');
                     }
@@ -63,7 +62,7 @@ class YacorCodeReviewer {
             const certPath = config.get('gigachat.certificatePath');
             const keyPath = config.get('gigachat.privateKeyPath');
             if (!certPath || !keyPath) {
-                vscode.window.showWarningMessage('Yacor: Certificate authentication requires both certificate and private key files.', 'Setup Wizard', 'Configure Certificate Auth').then(selection => {
+                vscode.window.showWarningMessage('YACOR: Certificate authentication requires both certificate and private key files.', 'Setup Wizard', 'Configure Certificate Auth').then(selection => {
                     if (selection === 'Setup Wizard') {
                         vscode.commands.executeCommand('yacor.showSetupWizard');
                     }
@@ -76,54 +75,57 @@ class YacorCodeReviewer {
             // Validate certificate files exist
             const validationResult = await this.validateCertificateFiles(certPath, keyPath);
             if (!validationResult.valid) {
-                vscode.window.showErrorMessage(`Yacor: Certificate validation failed: ${validationResult.error}`, 'Configure Certificate Auth').then(selection => {
+                vscode.window.showErrorMessage(`YACOR: Certificate validation failed: ${validationResult.error}`, 'Configure Certificate Auth').then(selection => {
                     if (selection === 'Configure Certificate Auth') {
                         vscode.commands.executeCommand('yacor.configureCertificateAuth');
                     }
                 });
                 return;
             }
-=======
-        const config = vscode.workspace.getConfiguration('yoda');
-        const apiKey = config.get('gigachat.apiKey');
-        const baseUrl = config.get('gigachat.baseUrl');
-        const ignoreSSLErrors = config.get('gigachat.ignoreSSLErrors');
-        if (!apiKey) {
-            vscode.window.showWarningMessage('Yoda: GigaChat API key not configured. Please set it in settings.', 'Setup Wizard', 'Configure API Key').then(selection => {
-                if (selection === 'Setup Wizard') {
-                    vscode.commands.executeCommand('yoda.showSetupWizard');
-                }
-                else if (selection === 'Configure API Key') {
-                    vscode.commands.executeCommand('yoda.configureApiKey');
-                }
-            });
-            return;
->>>>>>> d37ffc5827094786e0db4d350a15c354e0562db6
         }
         try {
             // Handle SSL certificate issues for GigaChat
             if (ignoreSSLErrors) {
                 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
             }
-            // Build GigaChat configuration
-            const gigaChatConfig = {
-                clientSecretKey: apiKey,
+            // Build GigaChat configuration based on authentication method
+            let gigaChatConfig = {
                 isIgnoreTSL: ignoreSSLErrors || true,
                 isPersonal: true,
-                autoRefreshToken: true,
                 verifySSLCerts: !ignoreSSLErrors
             };
-            // Add base URL if specified
+            if (authMethod === 'apiKey') {
+                // API Key authentication for public GigaChat API
+                const apiKey = config.get('gigachat.apiKey');
+                gigaChatConfig.clientSecretKey = apiKey;
+                gigaChatConfig.autoRefreshToken = true;
+                console.log('🔑 Using API key authentication for public GigaChat API');
+            }
+            else if (authMethod === 'certificate') {
+                // Certificate authentication for company-hosted model
+                const certPath = config.get('gigachat.certificatePath');
+                const keyPath = config.get('gigachat.privateKeyPath');
+                const passphrase = config.get('gigachat.certificatePassphrase');
+                gigaChatConfig.cert = certPath;
+                gigaChatConfig.key = keyPath;
+                if (passphrase && passphrase.trim()) {
+                    gigaChatConfig.passphrase = passphrase.trim();
+                }
+                gigaChatConfig.autoRefreshToken = false; // Certificate auth doesn't need token refresh
+                console.log('🔐 Using certificate authentication for company-hosted model');
+            }
+            // Add base URL if specified (required for company-hosted models)
             if (baseUrl && baseUrl.trim()) {
                 gigaChatConfig.baseUrl = baseUrl.trim();
                 console.log(`🌐 Using custom GigaChat base URL: ${baseUrl}`);
             }
-            console.log('🔑 Using API key authentication');
             this.gigaChat = new gigachat_node_1.GigaChat(gigaChatConfig);
-            // Create the access token
-            await this.gigaChat.createToken();
-            this.statusBarItem.text = "$(check) Yacor Ready";
-            this.statusBarItem.tooltip = "Yacor Code Mentor is ready to analyze your code";
+            // Create the access token (only for API key auth)
+            if (authMethod === 'apiKey') {
+                await this.gigaChat.createToken();
+            }
+            this.statusBarItem.text = "$(check) YACOR Ready";
+            this.statusBarItem.tooltip = "YACOR Code Reviewer is ready to analyze your code";
             this.statusBarItem.show();
         }
         catch (error) {
@@ -131,10 +133,10 @@ class YacorCodeReviewer {
             const errorMessage = error instanceof Error ? error.message : String(error);
             // Handle specific certificate errors
             if (errorMessage.includes('certificate') || errorMessage.includes('SSL') || errorMessage.includes('TLS')) {
-                vscode.window.showErrorMessage(`🔒 Yacor: SSL Certificate Error - ${errorMessage}`, 'Fix SSL Issues', 'Open Settings', 'Help').then(async (selection) => {
+                vscode.window.showErrorMessage(`🔒 YACOR: SSL Certificate Error - ${errorMessage}`, 'Fix SSL Issues', 'Open Settings', 'Help').then(async (selection) => {
                     if (selection === 'Fix SSL Issues') {
                         await config.update('gigachat.ignoreSSLErrors', true, vscode.ConfigurationTarget.Global);
-                        vscode.window.showInformationMessage('✅ SSL errors are now ignored. Restarting Yacor...');
+                        vscode.window.showInformationMessage('✅ SSL errors are now ignored. Restarting YACOR...');
                         await this.initializeGigaChat();
                     }
                     else if (selection === 'Open Settings') {
@@ -146,17 +148,46 @@ class YacorCodeReviewer {
                 });
             }
             else {
-                vscode.window.showErrorMessage(`Yacor: Failed to initialize GigaChat: ${errorMessage}`, 'Retry', 'Configure API Key').then(selection => {
-                    if (selection === 'Retry') {
-                        this.initializeGigaChat();
-                    }
-                    else if (selection === 'Configure API Key') {
-                        vscode.commands.executeCommand('yacor.configureApiKey');
-                    }
-                });
+                // Handle authentication-specific errors
+                if (authMethod === 'apiKey') {
+                    vscode.window.showErrorMessage(`YACOR: Failed to initialize GigaChat API: ${errorMessage}`, 'Retry', 'Configure API Key', 'Switch to Certificate Auth').then(selection => {
+                        if (selection === 'Retry') {
+                            this.initializeGigaChat();
+                        }
+                        else if (selection === 'Configure API Key') {
+                            vscode.commands.executeCommand('yacor.configureApiKey');
+                        }
+                        else if (selection === 'Switch to Certificate Auth') {
+                            vscode.commands.executeCommand('yacor.configureCertificateAuth');
+                        }
+                    });
+                }
+                else if (authMethod === 'certificate') {
+                    vscode.window.showErrorMessage(`YACOR: Failed to initialize GigaChat with certificate: ${errorMessage}`, 'Retry', 'Configure Certificate Auth', 'Switch to API Key').then(selection => {
+                        if (selection === 'Retry') {
+                            this.initializeGigaChat();
+                        }
+                        else if (selection === 'Configure Certificate Auth') {
+                            vscode.commands.executeCommand('yacor.configureCertificateAuth');
+                        }
+                        else if (selection === 'Switch to API Key') {
+                            vscode.commands.executeCommand('yacor.configureApiKey');
+                        }
+                    });
+                }
+                else {
+                    vscode.window.showErrorMessage(`YACOR: Failed to initialize GigaChat: ${errorMessage}`, 'Retry', 'Setup Wizard').then(selection => {
+                        if (selection === 'Retry') {
+                            this.initializeGigaChat();
+                        }
+                        else if (selection === 'Setup Wizard') {
+                            vscode.commands.executeCommand('yacor.showSetupWizard');
+                        }
+                    });
+                }
             }
-            this.statusBarItem.text = "$(error) Yacor Error";
-            this.statusBarItem.tooltip = `Yacor Code Mentor failed: ${errorMessage}`;
+            this.statusBarItem.text = "$(error) YACOR Error";
+            this.statusBarItem.tooltip = `YACOR Code Reviewer failed: ${errorMessage}`;
             this.statusBarItem.show();
         }
     }
@@ -210,14 +241,10 @@ class YacorCodeReviewer {
         const showCurrentModelCommand = vscode.commands.registerCommand('yacor.showCurrentModel', async () => {
             await this.showCurrentModel();
         });
-<<<<<<< HEAD
         const configureCertificateAuthCommand = vscode.commands.registerCommand('yacor.configureCertificateAuth', async () => {
             await this.showCertificateAuthSetup();
         });
         const testConnectionCommand = vscode.commands.registerCommand('yacor.testConnection', async () => {
-=======
-        const testConnectionCommand = vscode.commands.registerCommand('yoda.testConnection', async () => {
->>>>>>> d37ffc5827094786e0db4d350a15c354e0562db6
             await this.testGigaChatConnection();
         });
         context.subscriptions.push(analyzeFileCommand, analyzeWorkspaceCommand, configureBestPracticesCommand, configureApiKeyCommand, showSetupWizardCommand, analyzeCrossFileCommand, selectModelCommand, refreshModelsCommand, showCurrentModelCommand, testConnectionCommand);
@@ -226,19 +253,19 @@ class YacorCodeReviewer {
         if (!this.gigaChat || !this.isSupportedLanguage(document.languageId)) {
             return;
         }
-        this.statusBarItem.text = "$(sync~spin) Yacor Analyzing...";
+        this.statusBarItem.text = "$(sync~spin) YACOR Analyzing...";
         try {
             const analysis = await this.performCodeAnalysis(document);
             this.updateDiagnostics(document, analysis, document.getText());
-            this.statusBarItem.text = `$(check) Yacor: ${analysis.length} issues found`;
+            this.statusBarItem.text = `$(check) YACOR: ${analysis.length} issues found`;
             setTimeout(() => {
-                this.statusBarItem.text = "$(check) Yacor Ready";
+                this.statusBarItem.text = "$(check) YACOR Ready";
             }, 3000);
         }
         catch (error) {
             console.error('Analysis failed:', error);
-            vscode.window.showErrorMessage(`Yacor analysis failed: ${error}`);
-            this.statusBarItem.text = "$(error) Yacor Error";
+            vscode.window.showErrorMessage(`YACOR analysis failed: ${error}`);
+            this.statusBarItem.text = "$(error) YACOR Error";
         }
     }
     async performCodeAnalysis(document) {
@@ -262,7 +289,7 @@ class YacorCodeReviewer {
             return this.parseAnalysisResponse(response.choices[0].message.content);
         }
         catch (error) {
-            console.error('Yacor: GigaChat API error:', error);
+            console.error('YACOR: GigaChat API error:', error);
             throw error;
         }
     }
@@ -312,6 +339,47 @@ class YacorCodeReviewer {
                 terms.push(keyword);
         });
         return terms.filter(term => term.length > 2); // Filter out very short terms
+    }
+    async validateCertificateFiles(certPath, keyPath) {
+        const fs = require('fs');
+        const path = require('path');
+        try {
+            // Check if certificate file exists and is readable
+            if (!fs.existsSync(certPath)) {
+                return { valid: false, error: `Certificate file not found: ${certPath}` };
+            }
+            if (!fs.existsSync(keyPath)) {
+                return { valid: false, error: `Private key file not found: ${keyPath}` };
+            }
+            // Check if files are readable
+            try {
+                fs.accessSync(certPath, fs.constants.R_OK);
+            }
+            catch (error) {
+                return { valid: false, error: `Certificate file not readable: ${certPath}` };
+            }
+            try {
+                fs.accessSync(keyPath, fs.constants.R_OK);
+            }
+            catch (error) {
+                return { valid: false, error: `Private key file not readable: ${keyPath}` };
+            }
+            // Validate file extensions
+            const certExt = path.extname(certPath).toLowerCase();
+            const keyExt = path.extname(keyPath).toLowerCase();
+            const validCertExts = ['.crt', '.pem', '.cert'];
+            const validKeyExts = ['.key', '.pem'];
+            if (!validCertExts.includes(certExt)) {
+                return { valid: false, error: `Invalid certificate file extension. Expected: ${validCertExts.join(', ')}` };
+            }
+            if (!validKeyExts.includes(keyExt)) {
+                return { valid: false, error: `Invalid private key file extension. Expected: ${validKeyExts.join(', ')}` };
+            }
+            return { valid: true };
+        }
+        catch (error) {
+            return { valid: false, error: `Certificate validation error: ${error}` };
+        }
     }
     buildAnalysisPrompt(code, language, rules) {
         const getLanguageGuidance = (lang) => {
@@ -737,11 +805,12 @@ If no issues are found, return: {"issues": []}`;
             }
         });
         if (apiKey !== undefined) {
+            await config.update('gigachat.authMethod', 'apiKey', vscode.ConfigurationTarget.Global);
             await config.update('gigachat.apiKey', apiKey, vscode.ConfigurationTarget.Global);
             await config.update('setup.completed', true, vscode.ConfigurationTarget.Global);
             // Ensure SSL errors are ignored by default (common with GigaChat)
             await config.update('gigachat.ignoreSSLErrors', true, vscode.ConfigurationTarget.Global);
-            vscode.window.showInformationMessage('✅ GigaChat API key configured successfully! Yacor is ready to analyze your multi-language codebase.', 'Test Analysis').then(selection => {
+            vscode.window.showInformationMessage('✅ GigaChat API key configured successfully! YACOR is ready to analyze your multi-language codebase.', 'Test Analysis').then(selection => {
                 if (selection === 'Test Analysis') {
                     vscode.commands.executeCommand('yacor.analyzeFile');
                 }
@@ -754,10 +823,13 @@ If no issues are found, return: {"issues": []}`;
         const config = vscode.workspace.getConfiguration('yacor');
         const isSetupCompleted = config.get('setup.completed');
         if (isSetupCompleted) {
-            const action = await vscode.window.showInformationMessage('🧙‍♂️ Yacor is already configured! What would you like to do?', 'Update API Key', 'Configure Best Practices', 'Test Analysis');
+            const action = await vscode.window.showInformationMessage('🧙‍♂️ YACOR is already configured! What would you like to do?', 'Update API Key', 'Configure Certificate Auth', 'Configure Best Practices', 'Test Analysis');
             switch (action) {
                 case 'Update API Key':
                     await this.showApiKeySetup();
+                    break;
+                case 'Configure Certificate Auth':
+                    await this.showCertificateAuthSetup();
                     break;
                 case 'Configure Best Practices':
                     vscode.commands.executeCommand('yacor.configureBestPractices');
@@ -769,14 +841,22 @@ If no issues are found, return: {"issues": []}`;
             return;
         }
         // Welcome message
-        const startSetup = await vscode.window.showInformationMessage(`🧙‍♂️ Welcome to Yacor - Code Reviewer!
+        const startSetup = await vscode.window.showInformationMessage(`🧙‍♂️ Welcome to YACOR - Code Reviewer!
 
 Let's get you set up to analyze your code across multiple languages with AI-powered insights.
 
-You'll need a GigaChat API key from Sber Developer Portal.`, { modal: true }, 'Get Started', 'Later');
-        if (startSetup !== 'Get Started') {
+Choose your authentication method:`, { modal: true }, 'API Key (Public GigaChat)', 'Certificate (Company Server)', 'Later');
+        if (startSetup === 'API Key (Public GigaChat)') {
+            await this.setupApiKeyAuthentication();
+        }
+        else if (startSetup === 'Certificate (Company Server)') {
+            await this.setupCertificateAuthentication();
+        }
+        else {
             return;
         }
+    }
+    async setupApiKeyAuthentication() {
         // Step 1: API Key setup
         const needsKey = await vscode.window.showInformationMessage(`📋 Step 1: Get your GigaChat API Key
 
@@ -792,24 +872,51 @@ Ready to enter your API key?`, 'Yes, I have my key', 'Open Sber Portal', 'Skip f
         }
         if (needsKey === 'Yes, I have my key') {
             await this.showApiKeySetup();
-            // Step 2: Test analysis
-            const testAnalysis = await vscode.window.showInformationMessage('🔍 Setup Complete! Would you like to test Yacor on some Python code?', 'Create Test File', 'Analyze Current File', 'Done');
-            if (testAnalysis === 'Create Test File') {
-                // Ask user which language to test
-                const language = await vscode.window.showQuickPick([
-                    { label: '🐍 Python', value: 'python' },
-                    { label: '🟨 JavaScript', value: 'javascript' },
-                    { label: '🔷 TypeScript', value: 'typescript' },
-                    { label: '☕ Java', value: 'java' }
-                ], { placeHolder: 'Which language would you like to test?' });
-                if (language) {
-                    const testCode = {
-                        python: `# Test file for Yacor Code Reviewer - Python
+            await this.completeSetup();
+        }
+    }
+    async setupCertificateAuthentication() {
+        const config = vscode.workspace.getConfiguration('yacor');
+        // Step 1: Explain certificate authentication
+        const understandCert = await vscode.window.showInformationMessage(`🔐 Certificate Authentication Setup
+
+This method connects to your company's locally-hosted GigaChat model using client certificates.
+
+You'll need:
+• Certificate file (.crt, .pem, .cert)
+• Private key file (.key, .pem)
+• Optional: Private key passphrase
+• Company server URL
+
+Ready to configure?`, 'Yes, configure certificates', 'Switch to API Key', 'Cancel');
+        if (understandCert === 'Switch to API Key') {
+            await this.setupApiKeyAuthentication();
+            return;
+        }
+        if (understandCert === 'Yes, configure certificates') {
+            await this.showCertificateAuthSetup();
+            await this.completeSetup();
+        }
+    }
+    async completeSetup() {
+        // Step 2: Test analysis
+        const testAnalysis = await vscode.window.showInformationMessage('🔍 Setup Complete! Would you like to test YACOR on some code?', 'Create Test File', 'Analyze Current File', 'Done');
+        if (testAnalysis === 'Create Test File') {
+            // Ask user which language to test
+            const language = await vscode.window.showQuickPick([
+                { label: '🐍 Python', value: 'python' },
+                { label: '🟨 JavaScript', value: 'javascript' },
+                { label: '🔷 TypeScript', value: 'typescript' },
+                { label: '☕ Java', value: 'java' }
+            ], { placeHolder: 'Which language would you like to test?' });
+            if (language) {
+                const testCode = {
+                    python: `# Test file for YACOR Code Reviewer - Python
 def greet(name):
     print("Hello " + name)  # Should use f-strings and logging
 
 greet("World")`,
-                        javascript: `// Test file for Yacor Code Reviewer - JavaScript
+                    javascript: `// Test file for YACOR Code Reviewer - JavaScript
 var userName = "World";  // Should use const/let
 
 function greet(name) {
@@ -817,13 +924,13 @@ function greet(name) {
 }
 
 console.log(greet(userName));`,
-                        typescript: `// Test file for Yacor Code Reviewer - TypeScript
+                    typescript: `// Test file for YACOR Code Reviewer - TypeScript
 function greet(name: any): any {  // Should avoid 'any' type
     return "Hello " + name;
 }
 
 const result = greet("World");`,
-                        java: `// Test file for Yacor Code Reviewer - Java
+                    java: `// Test file for YACOR Code Reviewer - Java
 public class Test {
     public String name;  // Should be private with getter/setter
     
@@ -831,23 +938,22 @@ public class Test {
         return "Hello " + name;  // Missing @Override if overriding
     }
 }`
-                    };
-                    const doc = await vscode.workspace.openTextDocument({
-                        content: testCode[language.value],
-                        language: language.value === 'java' ? 'java' : language.value
-                    });
-                    await vscode.window.showTextDocument(doc);
-                    vscode.window.showInformationMessage(`📝 ${language.label} test file created! Save it to trigger analysis, or run "Yacor: Analyze Current File"`);
-                }
+                };
+                const doc = await vscode.workspace.openTextDocument({
+                    content: testCode[language.value],
+                    language: language.value === 'java' ? 'java' : language.value
+                });
+                await vscode.window.showTextDocument(doc);
+                vscode.window.showInformationMessage(`📝 ${language.label} test file created! Save it to trigger analysis, or run "YACOR: Analyze Current File"`);
             }
-            else if (testAnalysis === 'Analyze Current File') {
-                vscode.commands.executeCommand('yacor.analyzeFile');
-            }
+        }
+        else if (testAnalysis === 'Analyze Current File') {
+            vscode.commands.executeCommand('yacor.analyzeFile');
         }
     }
     async performCrossFileAnalysis() {
         if (!this.gigaChat) {
-            vscode.window.showErrorMessage('Yacor: GigaChat not initialized. Please configure your API key first.');
+            vscode.window.showErrorMessage('YACOR: GigaChat not initialized. Please configure your authentication first.');
             return;
         }
         const config = vscode.workspace.getConfiguration('yacor');
@@ -1365,7 +1471,6 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
         this.diagnosticCollection.dispose();
         this.statusBarItem.dispose();
     }
-<<<<<<< HEAD
     async showCertificateAuthSetup() {
         const config = vscode.workspace.getConfiguration('yacor');
         // Step 1: Choose certificate file
@@ -1418,7 +1523,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                 await config.update('gigachat.baseUrl', baseUrl.trim(), vscode.ConfigurationTarget.Global);
             }
             await config.update('setup.completed', true, vscode.ConfigurationTarget.Global);
-            vscode.window.showInformationMessage('✅ Certificate authentication configured successfully! Restarting Yacor...', 'Test Connection').then(selection => {
+            vscode.window.showInformationMessage('✅ Certificate authentication configured successfully! YACOR is ready to analyze your code.', 'Test Connection').then(selection => {
                 if (selection === 'Test Connection') {
                     vscode.commands.executeCommand('yacor.testConnection');
                 }
@@ -1430,8 +1535,6 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
             vscode.window.showErrorMessage(`Failed to save certificate configuration: ${error}`);
         }
     }
-=======
->>>>>>> d37ffc5827094786e0db4d350a15c354e0562db6
     async testGigaChatConnection() {
         if (!this.gigaChat) {
             vscode.window.showWarningMessage('GigaChat is not initialized. Please configure authentication first.');
@@ -1453,16 +1556,12 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
                         }]
                 });
                 progress.report({ increment: 70, message: 'Connection successful!' });
-<<<<<<< HEAD
                 const config = vscode.workspace.getConfiguration('yacor');
                 const authMethod = config.get('gigachat.authMethod') || 'apiKey';
-=======
-                const config = vscode.workspace.getConfiguration('yoda');
->>>>>>> d37ffc5827094786e0db4d350a15c354e0562db6
                 const baseUrl = config.get('gigachat.baseUrl');
                 const connectionInfo = [
                     `✅ GigaChat connection successful!`,
-                    `🔐 Authentication: API Key`,
+                    `🔐 Authentication: ${authMethod === 'apiKey' ? 'API Key' : 'Certificate'}`,
                     `🤖 Model: ${this.getSelectedModel()}`,
                     baseUrl ? `🌐 Base URL: ${baseUrl}` : '🌐 Base URL: Default'
                 ].join('\n');
@@ -1484,7 +1583,7 @@ The automatic fix is recommended and commonly used for GigaChat connections.`;
     }
 }
 function activate(context) {
-    console.log('Yacor Code Mentor is now active!');
+    console.log('YACOR Code Reviewer is now active!');
     const yacor = new YacorCodeReviewer(context);
     // Check if this is first time setup
     const config = vscode.workspace.getConfiguration('yacor');
@@ -1492,7 +1591,7 @@ function activate(context) {
     const hasApiKey = config.get('gigachat.apiKey');
     if (!isSetupCompleted || !hasApiKey) {
         // First time setup
-        vscode.window.showInformationMessage('🧙‍♂️ Welcome to Yacor - Python Code Mentor! Ready to improve your Python code?', 'Setup Wizard', 'Configure API Key', 'Later').then(selection => {
+        vscode.window.showInformationMessage('🧙‍♂️ Welcome to YACOR - Code Reviewer! Ready to improve your code?', 'Setup Wizard', 'Configure API Key', 'Later').then(selection => {
             switch (selection) {
                 case 'Setup Wizard':
                     vscode.commands.executeCommand('yacor.showSetupWizard');
@@ -1505,7 +1604,7 @@ function activate(context) {
     }
     else {
         // Extension is already configured
-        vscode.window.showInformationMessage('🚀 Yacor is ready to analyze your code in multiple languages!', 'Analyze Current File', 'Analyze Workspace', 'Cross-File Analysis').then(selection => {
+        vscode.window.showInformationMessage('🚀 YACOR is ready to analyze your code in multiple languages!', 'Analyze Current File', 'Analyze Workspace', 'Cross-File Analysis').then(selection => {
             switch (selection) {
                 case 'Analyze Current File':
                     vscode.commands.executeCommand('yacor.analyzeFile');
@@ -1523,7 +1622,7 @@ function activate(context) {
 }
 exports.activate = activate;
 function deactivate() {
-    console.log('Yacor Code Mentor is now deactivated');
+    console.log('YACOR Code Reviewer is now deactivated');
 }
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map
